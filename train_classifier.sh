@@ -17,7 +17,7 @@ do
   --dataset_name ${DATASET} \
   --output_dir data/logs/${DATASET}/${MODEL_NAME}-{TRAINING_MODE}/seed_${SEED} \
   --max_seq_length 512 \
-  --generation_max_length ${GEN_MAX_LENGTH}
+  --generation_max_length ${GEN_MAX_LENGTH} \
   --do_train \
   --do_eval \
   --do_pred \
