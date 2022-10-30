@@ -183,7 +183,7 @@ class MultiLabelBench(datasets.GeneratorBasedBuilder):
             label_column="uklex_concepts",
             label_level='level_1',
             label_classes=UKLEX_CONCEPTS['level_1'],
-            dev_column="dev",
+            dev_column="val",
             url='TBA',
             data_url=f"uklex.tar.gz",
             data_file="uklex.jsonl",
