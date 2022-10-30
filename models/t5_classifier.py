@@ -62,8 +62,8 @@ class LabelWiseAttention(nn.Module):
         self.num_attention_heads = config.num_attention_heads
         self.attention_head_size = config.d_model // config.num_attention_heads
         self.all_head_size = config.d_model
-        self.key = nn.Linear(config.d_model, config.d_model, bias=False)
-        self.value = nn.Linear(config.d_model, config.d_model, bias=False)
+        self.key = nn.Linear(config.d_model, config.d_model)
+        self.value = nn.Linear(config.d_model, config.d_model)
 
         classifier_dropout = (
             config.dropout_rate if config.dropout_rate is not None else 0.0
@@ -73,7 +73,7 @@ class LabelWiseAttention(nn.Module):
         self.label_encodings = nn.Parameter(torch.Tensor(self.num_labels, config.d_model),
                                             requires_grad=True)
 
-        self.classifier = nn.Linear(config.d_model, 1, bias=False)
+        self.classifier = nn.Linear(config.d_model, 1)
 
         # init label-related matrices
         self.label_encodings.data.normal_(mean=0.0, std=0.02)
@@ -234,8 +234,8 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
 
 if __name__ == "__main__":
     from transformers import AutoTokenizer
-    model = T5ForSequenceClassificatiom.from_pretrained('t5-small')
+    model = T5ForSequenceClassificatiom.from_pretrained('t5-small', num_labels=20)
     tokenizer = AutoTokenizer.from_pretrained('t5-small')
     inputs = tokenizer(['dog ' * 500] * 3, truncation=True, max_length=512, padding='max_length', return_tensors='pt')
-    model(inputs['input_ids'], attention_mask=inputs['attention_mask'], labels=torch.zeros(len(inputs['input_ids']), 2))
+    model(inputs['input_ids'], attention_mask=inputs['attention_mask'], labels=torch.zeros(len(inputs['input_ids']), 20))
     print()
