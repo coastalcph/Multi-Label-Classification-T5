@@ -4,6 +4,8 @@ DATASET='eurlex-l1'
 USE_LWAN=false
 SEQ2SEQ=false
 GEN_MAX_LENGTH=32
+TRAINING_MODE='standard'
+export PYTHONPATH=.
 export CUDA_VISIBLE_DEVICES=0
 
 for SEED in 21 32 42 84
@@ -13,7 +15,7 @@ do
   --seq2seq ${SEQ2SEQ} \
   --use_lwan ${USE_LWAN} \
   --dataset_name ${DATASET} \
-  --output_dir data/logs/${DATASET}/${MODEL_NAME}/seed_${SEED} \
+  --output_dir data/logs/${DATASET}/${MODEL_NAME}-{TRAINING_MODE}/seed_${SEED} \
   --max_seq_length 512 \
   --generation_max_length ${GEN_MAX_LENGTH}
   --do_train \
