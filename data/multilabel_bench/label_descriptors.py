@@ -237,7 +237,7 @@ MESH_CONCEPTS = {
                 'E': ('Analytical, Diagnostic and Therapeutic Techniques, and Equipment', 'Technical'),
                 'F': ('Psychiatry and Psychology', 'Psychology'),
                 'G': ('Phenomena and Processes', 'Processes'),
-                'H': ('Disciplines and Occupations', 'Anatomy'),
+                'H': ('Disciplines and Occupations', 'Occupations'),
                 'I': ('Anthropology, Education, Sociology, and Social Phenomena', 'Anthropology'),
                 'J': ('Technology, Industry, and Agriculture', 'Industry'),
                 'K': ('Humanities', 'Humanities'),
