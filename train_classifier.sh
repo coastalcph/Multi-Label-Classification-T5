@@ -1,5 +1,5 @@
 MODEL_NAME='google/t5-v1_1-base'
-BATCH_SIZE=8
+BATCH_SIZE=16
 DATASET='eurlex-l1'
 USE_LWAN=false
 SEQ2SEQ=false
