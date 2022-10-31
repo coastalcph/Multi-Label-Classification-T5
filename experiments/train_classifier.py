@@ -154,6 +154,10 @@ class ModelArguments:
         default=False,
         metadata={"help": "Whether the model is using Label-Wise Attention."},
     )
+    lwan_heads: int = field(
+        default=-1,
+        metadata={"help": "Number of Label-Wise Attention Heads."},
+    )
     cache_dir: Optional[str] = field(
         default=None,
         metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
@@ -290,6 +294,11 @@ def main():
         elif data_args.label_descriptors_mode == 'numbers':
             label_desc2id = {str(idx+1): idx for idx, _ in enumerate(label_descs)}
             label_id2desc = {idx: str(idx + 1) for idx, _ in enumerate(label_descs)}
+    else:
+        # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
+        if data_args.label_descriptors_mode == 'original':
+            label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
+            label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
 
     # Load pretrained model and tokenizer
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
@@ -323,6 +332,7 @@ def main():
     else:
         # Register pooling method to config
         config.use_lwan = model_args.use_lwan
+        config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         model = T5ForSequenceClassificatiom.from_pretrained(
             model_args.model_name_or_path,
             from_tf=bool(".ckpt" in model_args.model_name_or_path),
@@ -350,7 +360,7 @@ def main():
 
         if model_args.seq2seq:
             label_batch = tokenizer(
-                [', '.join([label_id2desc[label] for label in sorted(labels)]) if len(labels) else 'none' for labels in
+                [', '.join(sorted([label_id2desc[label] for label in labels])) if len(labels) else 'none' for labels in
                  examples["concepts"]],
                 padding=False,
                 max_length=data_args.generation_max_length,
@@ -474,9 +484,9 @@ def main():
                                                                                      label2id=label_desc2id)
         else:
             hard_predictions = (expit(predictions) > 0.5).astype('int32')
-            text_preds = [','.join([config.id2label[idx] for idx, val in enumerate(doc_predictions) if val == 1])
+            text_preds = [', '.join(sorted([label_id2desc[idx] for idx, val in enumerate(doc_predictions) if val == 1]))
                           for doc_predictions in hard_predictions]
-            text_labels = [','.join([config.id2label[idx] for idx, val in enumerate(doc_labels) if val == 1])
+            text_labels = [', '.join(sorted([label_id2desc[idx] for idx, val in enumerate(doc_labels) if val == 1]))
                            for doc_labels in labels]
 
         max_predict_samples = (

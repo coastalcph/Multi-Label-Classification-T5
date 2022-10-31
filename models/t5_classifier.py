@@ -59,8 +59,8 @@ class LabelWiseAttention(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.num_labels = config.num_labels
-        self.num_attention_heads = config.num_attention_heads
-        self.attention_head_size = config.d_model // config.num_attention_heads
+        self.num_attention_heads = config.lwan_heads
+        self.attention_head_size = config.d_model // self.num_attention_heads
         self.all_head_size = config.d_model
         self.key = nn.Linear(config.d_model, config.d_model)
         self.value = nn.Linear(config.d_model, config.d_model)
