@@ -432,10 +432,10 @@ def main():
                                            pad_to_multiple_of=data_args.generation_max_length) \
         if model_args.seq2seq else DataCollatorForMultiLabelClassification(tokenizer)
 
-    if training_args.optim == 'adam':
+    if training_args.optim.value == 'adam':
         optimizer = 'adamw_hf'
         scheduler = 'cosine'
-    elif training_args.optim == 'adafactor':
+    elif training_args.optim.value == 'adafactor':
         optimizer = Adafactor(lr=training_args.learning_rate, scale_parameter=False, relative_step=False)
         scheduler = get_adafactor_schedule(optimizer=optimizer)
 
