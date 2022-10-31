@@ -436,7 +436,14 @@ def main():
         optimizer = 'adamw_hf'
         scheduler = 'cosine'
     elif training_args.optim.value == 'adafactor':
-        optimizer = Adafactor(lr=training_args.learning_rate, scale_parameter=False, relative_step=False)
+        optimizer_grouped_parameters = [
+            {
+                "params": [p for n, p in model.named_parameters()],
+                "weight_decay": 0.0,
+            }
+        ]
+        optimizer = Adafactor(optimizer_grouped_parameters, lr=training_args.learning_rate,
+                              scale_parameter=False, relative_step=False)
         scheduler = get_adafactor_schedule(optimizer=optimizer)
 
     # Initialize our Trainer
