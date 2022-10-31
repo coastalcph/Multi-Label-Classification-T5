@@ -96,9 +96,9 @@ class LabelWiseAttention(nn.Module):
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
 
         # attention_mask = self.get_extended_attention_mask(attention_mask)
-        if attention_mask is not None:
-            # Apply the attention mask is (precomputed for all layers in RobertaModel forward() function)
-            attention_scores = attention_scores + attention_mask
+        # if attention_mask is not None:
+        #     # Apply the attention mask is (precomputed for all layers in RobertaModel forward() function)
+        #     attention_scores = attention_scores + attention_mask
 
         # Normalize the attention scores to probabilities.
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
