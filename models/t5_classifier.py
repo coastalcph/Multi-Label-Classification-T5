@@ -117,6 +117,45 @@ class LabelWiseAttention(nn.Module):
         return self.classifier(context_layer).squeeze()
 
 
+class LabelWiseAttentionV2(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        self.num_labels = config.num_labels
+        # self.num_attention_heads = config.lwan_heads
+        # self.attention_head_size = config.d_model // self.num_attention_heads
+        # self.all_head_size = config.d_model
+
+        self.key = nn.Linear(self.config.d_model, self.config.d_model)
+        self.value = nn.Linear(self.config.d_model, self.config.d_model)
+
+        self.label_encodings = nn.Parameter(torch.Tensor(self.num_labels, self.config.d_model),
+                                            requires_grad=True)
+
+        self.label_outputs = nn.Parameter(torch.Tensor(self.num_labels, self.config.d_model),
+                                          requires_grad=True)
+
+        # init label-related matrices
+        self.label_encodings.data.normal_(mean=0.0, std=0.02)
+        self.label_outputs.data.normal_(mean=0.0, std=0.02)
+
+    def forward(self,
+                hidden_states: Optional[torch.FloatTensor],
+                attention_mask: Optional[torch.FloatTensor] = None,
+                eos_position_indices: torch.Tensor = None,
+                ) -> torch.Tensor:
+        # Label-wise Attention
+        keys = self.key(hidden_states)
+        queries = torch.unsqueeze(self.label_encodings, 0).repeat(hidden_states.size(0), 1, 1)
+        values = self.value(hidden_states)
+        attention_scores = torch.einsum("aec,abc->abe", keys, queries)
+        attention_probs = nn.Softmax(dim=-1)(attention_scores)
+        lwan_encodings = torch.einsum("abe,aec->abc", attention_probs, values)
+
+        # Compute label scores / outputs
+        return torch.sum(lwan_encodings * self.label_outputs, dim=-1)
+
+
 class T5ForSequenceClassificatiom(T5PreTrainedModel):
     _keys_to_ignore_on_load_missing = [
         r"encoder.embed_tokens.weight",
@@ -141,7 +180,7 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
         self.encoder = T5Stack(encoder_config, self.shared)
 
         if self.use_lwan:
-            self.classifier = LabelWiseAttention(config)
+            self.classifier = LabelWiseAttentionV2(config)
         else:
             self.classifier = Pooler(config)
 
@@ -233,9 +272,13 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
 
 
 if __name__ == "__main__":
-    from transformers import AutoTokenizer
-    model = T5ForSequenceClassificatiom.from_pretrained('t5-small', num_labels=20)
-    tokenizer = AutoTokenizer.from_pretrained('t5-small')
+    from transformers import AutoTokenizer, AutoConfig
+    config = AutoConfig.from_pretrained('t5-base')
+    config.use_lwan = True
+    config.lwan_heads = 12
+    config.num_labels = 20
+    model = T5ForSequenceClassificatiom.from_pretrained('t5-base', config=config)
+    tokenizer = AutoTokenizer.from_pretrained('t5-base')
     inputs = tokenizer(['dog ' * 500] * 3, truncation=True, max_length=512, padding='max_length', return_tensors='pt')
     model(inputs['input_ids'], attention_mask=inputs['attention_mask'], labels=torch.zeros(len(inputs['input_ids']), 20))
     print()
