@@ -38,7 +38,6 @@ from data_collator import DataCollatorForMultiLabelClassification
 from models.t5_classifier import T5ForSequenceClassificatiom
 from experiments.trainer_seq2seq import Seq2SeqTrainer
 from data.multilabel_bench.label_descriptors import EUROVOC_CONCEPTS, ICD9_CONCEPTS, MESH_CONCEPTS, UKLEX_CONCEPTS
-from transformers.optimization import Adafactor, get_adafactor_schedule
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.20.0")
 
@@ -432,20 +431,6 @@ def main():
                                            pad_to_multiple_of=data_args.generation_max_length) \
         if model_args.seq2seq else DataCollatorForMultiLabelClassification(tokenizer)
 
-    if training_args.optim.value == 'adam':
-        optimizer = 'adamw_hf'
-        scheduler = 'cosine'
-    elif training_args.optim.value == 'adafactor':
-        optimizer_grouped_parameters = [
-            {
-                "params": [p for n, p in model.named_parameters()],
-                "weight_decay": 0.0,
-            }
-        ]
-        optimizer = Adafactor(optimizer_grouped_parameters, lr=training_args.learning_rate,
-                              scale_parameter=False, relative_step=False)
-        scheduler = get_adafactor_schedule(optimizer=optimizer)
-
     # Initialize our Trainer
     trainer = trainer_class(
         model=model,
@@ -456,7 +441,6 @@ def main():
         tokenizer=tokenizer,
         data_collator=data_collator,
         callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
-        optimizers=[optimizer, scheduler]
     )
     # Training
     if training_args.do_train:
