@@ -43,8 +43,5 @@ do
   --optim ${OPTIMIZER} \
   --gradient_accumulation_steps 1 \
   --eval_accumulation_steps 1 \
-  --learning_rate ${LEARNING_RATE} \
-  --max_train_samples 512 \
-  --max_eval_samples 128 \
-  --max_predict_samples 128
+  --learning_rate ${LEARNING_RATE}
 done
