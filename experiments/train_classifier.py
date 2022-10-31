@@ -295,9 +295,8 @@ def main():
             label_id2desc = {idx: str(idx + 1) for idx, _ in enumerate(label_descs)}
     else:
         # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
-        if data_args.label_descriptors_mode == 'original':
-            label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
-            label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
+        label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
+        label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
 
     # Load pretrained model and tokenizer
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
