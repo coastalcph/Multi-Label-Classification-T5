@@ -6,7 +6,6 @@ SEQ2SEQ=false
 GEN_MAX_LENGTH=32
 TRAINING_MODE='standard'
 OPTIMIZER='adafactor'
-SCHEDULER='constant_with_warmup'
 LEARNING_RATE=1e-4
 export PYTHONPATH=.
 export CUDA_VISIBLE_DEVICES=0
@@ -39,11 +38,9 @@ do
   --warmup_ratio 0.05 \
   --fp16 \
   --fp16_full_eval \
-  --half_precision_backend apex \
   --gradient_accumulation_steps 1 \
   --eval_accumulation_steps 1 \
   --optim ${OPTIMIZER} \
-  --lr_scheduler_type  ${SCHEDULER} \
   --learning_rate ${LEARNING_RATE} \
   --max_train_samples 1024 \
   --max_eval_samples 512 \
