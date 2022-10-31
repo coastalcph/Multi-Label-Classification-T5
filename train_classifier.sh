@@ -39,9 +39,13 @@ do
   --warmup_ratio 0.05 \
   --fp16 \
   --fp16_full_eval \
+  --half_precision_backend apex \
   --gradient_accumulation_steps 1 \
   --eval_accumulation_steps 1 \
   --optim ${OPTIMIZER} \
   --lr_scheduler_type  ${SCHEDULER} \
-  --learning_rate ${LEARNING_RATE}
+  --learning_rate ${LEARNING_RATE} \
+  --max_train_samples 1024 \
+  --max_eval_samples 512 \
+  --max_predict_samples 512
 done
