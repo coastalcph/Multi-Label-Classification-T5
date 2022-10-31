@@ -1,11 +1,12 @@
-MODEL_NAME='google/t5-v1_1-base'
+MODEL_NAME='t5-base'
 BATCH_SIZE=16
-DATASET='eurlex-l1'
+DATASET='uklex-l1'
 USE_LWAN=false
 SEQ2SEQ=false
 GEN_MAX_LENGTH=32
 TRAINING_MODE='standard'
-OPTIMIZER='adamw'
+OPTIMIZER='adafactor'
+SCHEDULER='constant_with_warmup'
 LEARNING_RATE=1e-4
 export PYTHONPATH=.
 export CUDA_VISIBLE_DEVICES=0
@@ -38,11 +39,12 @@ do
   --warmup_ratio 0.05 \
   --fp16 \
   --fp16_full_eval \
+  --lr_scheduler_type ${SCHEDULER} \
+  --optim ${OPTIMIZER} \
   --gradient_accumulation_steps 1 \
-  --lr_scheduler_type cosine \
   --eval_accumulation_steps 1 \
   --learning_rate ${LEARNING_RATE} \
-  --max_train_samples 1024 \
-  --max_eval_samples 512 \
-  --max_predict_samples 512
+  --max_train_samples 512 \
+  --max_eval_samples 128 \
+  --max_predict_samples 128
 done
