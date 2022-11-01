@@ -11,13 +11,14 @@ def main():
     # Required arguments
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='uklex-l1')
+    parser.add_argument('--optimizer', default='adafactor')
     config = parser.parse_args()
 
     print('-' * 100)
     print(config.dataset.upper())
 
     for mode in ['standard', 'lwan', 'seq2seq']:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.dataset}/{config.model}-{mode}'
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-{mode}'
         print('-' * 100)
         print(f'{mode.upper():<10}   | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)
