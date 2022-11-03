@@ -77,7 +77,7 @@ class DataTrainingArguments:
         },
     )
     generation_min_length: Optional[int] = field(
-        default=None,
+        default=1,
         metadata={
             "help": "The minimum total label sequence length after tokenization. Sequences shorter "
                     "than are not plausible."
@@ -307,7 +307,7 @@ def main():
         num_labels=num_labels,
         label2id={l[0]: i for i, l in enumerate(label_descs)},
         id2label={i: l[0] for i, l in enumerate(label_descs)},
-        finetuning_task="eurlex",
+        finetuning_task=data_args.dataset_name,
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
     )
@@ -354,6 +354,7 @@ def main():
             padding=padding,
             max_length=data_args.max_seq_length,
             truncation=True,
+            add_special_tokens=True if (model_args.seq2seq or model_args.use_lwan) else False
         )
 
         if model_args.seq2seq:
@@ -366,6 +367,11 @@ def main():
             )
             batch['labels'] = label_batch['input_ids']
         else:
+            if not model_args.use_lwan:
+                for idx, _ in enumerate(batch['input_ids']):
+                    batch['input_ids'][idx][-1] = tokenizer.eos_token_id
+                    batch['attention_mask'][idx][-1] = 1
+
             batch["label_ids"] = [[1.0 if label in labels else 0.0 for label in label_list] for labels in
                                   examples["concepts"]]
             batch['labels'] = batch['label_ids']

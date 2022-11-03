@@ -44,10 +44,10 @@ class Pooler(nn.Module):
     def forward(self,
                 hidden_states: Optional[torch.FloatTensor],
                 attention_mask: Optional[torch.FloatTensor] = None,
-                eos_position_indices: torch.Tensor = -1) -> torch.Tensor:
+                ) -> torch.Tensor:
         # We "pool" the model by simply taking the hidden state corresponding
         # to the last eos token.
-        last_token_tensor = hidden_states[eos_position_indices]
+        last_token_tensor = hidden_states[:, -1]
         pooled_output = self.dense(last_token_tensor)
         pooled_output = self.activation(pooled_output)
         pooled_output = self.dropout(pooled_output)
@@ -86,19 +86,16 @@ class LabelWiseAttention(nn.Module):
     def forward(self,
                 hidden_states: Optional[torch.FloatTensor],
                 attention_mask: Optional[torch.FloatTensor] = None,
-                eos_position_indices: torch.Tensor = None,
                 ) -> torch.Tensor:
+        # Zero out masked hidden states
+        hidden_states = hidden_states * attention_mask.unsqueeze(-1)
+
         key_layer = self.transpose_for_scores(self.key(hidden_states))
         value_layer = self.transpose_for_scores(self.value(hidden_states))
         query_layer = self.transpose_for_scores(torch.unsqueeze(self.label_encodings, 0).repeat(hidden_states.size(0), 1, 1))
 
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
-
-        # attention_mask = self.get_extended_attention_mask(attention_mask)
-        # if attention_mask is not None:
-        #     # Apply the attention mask is (precomputed for all layers in RobertaModel forward() function)
-        #     attention_scores = attention_scores + attention_mask
 
         # Normalize the attention scores to probabilities.
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
@@ -122,9 +119,6 @@ class LabelWiseAttentionV2(nn.Module):
         super().__init__()
         self.config = config
         self.num_labels = config.num_labels
-        # self.num_attention_heads = config.lwan_heads
-        # self.attention_head_size = config.d_model // self.num_attention_heads
-        # self.all_head_size = config.d_model
 
         self.key = nn.Linear(self.config.d_model, self.config.d_model)
         self.value = nn.Linear(self.config.d_model, self.config.d_model)
@@ -142,8 +136,10 @@ class LabelWiseAttentionV2(nn.Module):
     def forward(self,
                 hidden_states: Optional[torch.FloatTensor],
                 attention_mask: Optional[torch.FloatTensor] = None,
-                eos_position_indices: torch.Tensor = None,
                 ) -> torch.Tensor:
+        # Zero out masked hidden states
+        hidden_states = hidden_states * attention_mask.unsqueeze(-1)
+
         # Label-wise Attention
         keys = self.key(hidden_states)
         queries = torch.unsqueeze(self.label_encodings, 0).repeat(hidden_states.size(0), 1, 1)
@@ -228,13 +224,8 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
             return_dict=return_dict,
         )
 
-        eos_position_indices = (input_ids == self.config.eos_token_id)
-        extended_attention_mask = self.get_extended_attention_mask(attention_mask, input_ids.size())
-
         sequence_output = outputs[0]
-        logits = self.classifier(sequence_output,
-                                 attention_mask=extended_attention_mask,
-                                 eos_position_indices=eos_position_indices)
+        logits = self.classifier(sequence_output, attention_mask=attention_mask)
 
         loss = None
         if labels is not None:
