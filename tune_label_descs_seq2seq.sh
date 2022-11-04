@@ -14,6 +14,7 @@ do
   python experiments/train_classifier.py \
   --model_name_or_path ${MODEL_NAME} \
   --seq2seq true \
+  --label_descriptors_mode ${LABEL_DESC_TYPE} \
   --dataset_name ${DATASET} \
   --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}/seed_42 \
   --max_seq_length 512 \
