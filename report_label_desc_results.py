@@ -12,16 +12,15 @@ def main():
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='uklex-l1')
     parser.add_argument('--optimizer', default='adafactor')
-    parser.add_argument('--fp', default='fp16')
     config = parser.parse_args()
 
     print('-' * 100)
     print(config.dataset.upper())
 
-    for mode in ['standard', 'lwan', 'seq2seq', 'enc2dec']:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-{mode}/{config.fp}'
+    for label_desc_type in ['original', 'numbers', 'simplified']:
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-seq2seq-{label_desc_type}'
         print('-' * 100)
-        print(f'{mode.upper():<15} | {"VALIDATION":<40} | {"TEST":<40}')
+        print(f'{f"{label_desc_type}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)
         for seed in [21, 32, 42, 84]:
             seed = f'seed_{seed}'
