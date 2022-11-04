@@ -147,11 +147,15 @@ class ModelArguments:
     )
     seq2seq: bool = field(
         default=False,
-        metadata={"help": "Whether the model is a seq2seq model."},
+        metadata={"help": "Whether the model is a seq2seq generator model."},
+    )
+    t5_enc2dec: bool = field(
+        default=False,
+        metadata={"help": "Whether the model is a seq2seq classification model, similar to T5Enc Liu et al. (2022)."},
     )
     use_lwan: bool = field(
         default=False,
-        metadata={"help": "Whether the model is using Label-Wise Attention."},
+        metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN)."},
     )
     lwan_heads: int = field(
         default=-1,
@@ -298,6 +302,8 @@ def main():
         label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
         label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
 
+    print(f'LabelDesc2Id: {label_desc2id}')
+
     # Load pretrained model and tokenizer
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
@@ -330,6 +336,7 @@ def main():
     else:
         # Register pooling method to config
         config.use_lwan = model_args.use_lwan
+        config.t5_enc2dec = model_args.t5_enc2dec
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         model = T5ForSequenceClassificatiom.from_pretrained(
             model_args.model_name_or_path,
@@ -354,7 +361,7 @@ def main():
             padding=padding,
             max_length=data_args.max_seq_length,
             truncation=True,
-            add_special_tokens=True if (model_args.seq2seq or model_args.use_lwan) else False
+            add_special_tokens=True if (model_args.seq2seq or model_args.use_lwan or model_args.t5_enc2dec) else False
         )
 
         if model_args.seq2seq:
@@ -367,7 +374,17 @@ def main():
             )
             batch['labels'] = label_batch['input_ids']
         else:
-            if not model_args.use_lwan:
+            if model_args.t5_enc2dec:
+                decoder_inputs = tokenizer(
+                    ['label' for _ in examples["text"]],
+                    padding=False,
+                    max_length=1,
+                    add_special_tokens=False,
+                    truncation=True,
+                )
+                batch['decoder_input_ids'] = decoder_inputs['input_ids']
+                batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
+            if not model_args.use_lwan and not model_args.t5_enc2dec:
                 for idx, _ in enumerate(batch['input_ids']):
                     batch['input_ids'][idx][-1] = tokenizer.eos_token_id
                     batch['attention_mask'][idx][-1] = 1

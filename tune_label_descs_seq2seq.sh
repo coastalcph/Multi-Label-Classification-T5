@@ -1,29 +1,22 @@
 MODEL_NAME='t5-base'
 BATCH_SIZE=16
 DATASET='uklex-l1'
-USE_LWAN=false
-USE_T5ENC2DEC=true
-SEQ2SEQ=false
 GEN_MAX_LENGTH=32
-TRAINING_MODE='enc2dec'
-OPTIMIZER='adamw_torch'
-SCHEDULER='cosine'
+TRAINING_MODE='seq2seq'
+OPTIMIZER='adafactor'
 LEARNING_RATE=1e-4
 export PYTHONPATH=.
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 export TOKENIZERS_PARALLELISM=false
 
-for SEED in 21 32 42 84
+for LABEL_DESC_TYPE in original numbers
 do
   python experiments/train_classifier.py \
   --model_name_or_path ${MODEL_NAME} \
-  --seq2seq ${SEQ2SEQ} \
-  --use_lwan ${USE_LWAN} \
-  --t5_enc2dec ${USE_T5ENC2DEC} \
+  --seq2seq true \
   --dataset_name ${DATASET} \
-  --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}/seed_${SEED} \
+  --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}/seed_42 \
   --max_seq_length 512 \
-  --generation_max_length ${GEN_MAX_LENGTH} \
   --do_train \
   --do_eval \
   --do_pred \
@@ -35,13 +28,13 @@ do
   --save_strategy epoch \
   --save_total_limit 5 \
   --num_train_epochs 20 \
+  --learning_rate ${LEARNING_RATE} \
   --per_device_train_batch_size ${BATCH_SIZE} \
   --per_device_eval_batch_size ${BATCH_SIZE} \
-  --seed ${SEED} \
-  --warmup_ratio 0.05 \
-  --lr_scheduler_type ${SCHEDULER} \
+  --seed 42 \
+  --fp16 \
+  --fp16_full_eval \
   --optim ${OPTIMIZER} \
-  --gradient_accumulation_steps 1 \
-  --eval_accumulation_steps 1 \
-  --learning_rate ${LEARNING_RATE}
+  --warmup_ratio 0.05 \
+  --lr_scheduler_type constant_with_warmup
 done

@@ -28,6 +28,7 @@ import torch
 from torch import nn
 from transformers.models.t5.configuration_t5 import T5Config
 from transformers.models.t5.modeling_t5 import T5PreTrainedModel, T5Stack
+from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 
 
 class Pooler(nn.Module):
@@ -55,7 +56,7 @@ class Pooler(nn.Module):
         return logits
 
 
-class LabelWiseAttention(nn.Module):
+class LabelWiseAttentionV2(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.num_labels = config.num_labels
@@ -114,7 +115,7 @@ class LabelWiseAttention(nn.Module):
         return self.classifier(context_layer).squeeze()
 
 
-class LabelWiseAttentionV2(nn.Module):
+class LabelWiseAttentionV1(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -164,7 +165,7 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
     def __init__(self, config: T5Config):
         super().__init__(config)
         self.use_lwan = config.use_lwan
-        self.model_parallel = False
+        self.t5_enc2dec = config.t5_enc2dec
         self.model_dim = config.d_model
         self.num_labels = config.num_labels
         self.shared = nn.Embedding(config.vocab_size, config.d_model)
@@ -175,13 +176,46 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
         encoder_config.is_encoder_decoder = False
         self.encoder = T5Stack(encoder_config, self.shared)
 
-        if self.use_lwan:
+        if self.use_lwan and config.lwan_heads and config.lwan_heads != 1:
             self.classifier = LabelWiseAttentionV2(config)
+        elif self.use_lwan:
+            self.classifier = LabelWiseAttentionV1(config)
+        elif self.t5_enc2dec:
+            decoder_config = copy.deepcopy(config)
+            decoder_config.is_decoder = True
+            decoder_config.is_encoder_decoder = False
+            decoder_config.num_layers = config.num_decoder_layers
+            self.decoder = T5Stack(decoder_config, self.shared)
+            self.classifier = Pooler(config)
         else:
             self.classifier = Pooler(config)
 
         # Initialize weights and apply final processing
         self.post_init()
+
+        # Model parallel
+        self.model_parallel = False
+        self.device_map = None
+
+    def parallelize(self, device_map=None):
+        self.device_map = (
+            get_device_map(len(self.encoder.block), range(torch.cuda.device_count()))
+            if device_map is None
+            else device_map
+        )
+        assert_device_map(self.device_map, len(self.encoder.block))
+        self.encoder.parallelize(self.device_map)
+        self.decoder.parallelize(self.device_map)
+        self.model_parallel = True
+
+    def deparallelize(self):
+        self.encoder.deparallelize()
+        self.decoder.deparallelize()
+        self.encoder = self.encoder.to("cpu")
+        self.decoder = self.decoder.to("cpu")
+        self.model_parallel = False
+        self.device_map = None
+        torch.cuda.empty_cache()
 
     @classmethod
     def from_config(cls, config):
@@ -204,6 +238,8 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
         self,
         input_ids: Optional[torch.LongTensor] = None,
         attention_mask: Optional[torch.FloatTensor] = None,
+        decoder_input_ids: Optional[torch.LongTensor] = None,
+        decoder_attention_mask: Optional[torch.BoolTensor] = None,
         head_mask: Optional[torch.FloatTensor] = None,
         inputs_embeds: Optional[torch.FloatTensor] = None,
         labels: Optional[torch.LongTensor] = None,
@@ -214,7 +250,7 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         # Convert encoder inputs in embeddings if needed
-        outputs = self.encoder(
+        encoder_outputs = self.encoder(
             input_ids=input_ids,
             attention_mask=attention_mask,
             inputs_embeds=inputs_embeds,
@@ -224,8 +260,18 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
             return_dict=return_dict,
         )
 
-        sequence_output = outputs[0]
-        logits = self.classifier(sequence_output, attention_mask=attention_mask)
+        sequence_output = encoder_outputs[0]
+
+        if self.t5_enc2dec:
+            decoder_outputs = self.decoder(
+                input_ids=decoder_input_ids,
+                attention_mask=decoder_attention_mask,
+                encoder_hidden_states=sequence_output,
+                encoder_attention_mask=attention_mask,
+            )
+            logits = self.classifier(decoder_outputs[0], attention_mask=attention_mask)
+        else:
+            logits = self.classifier(sequence_output, attention_mask=attention_mask)
 
         loss = None
         if labels is not None:
@@ -251,14 +297,14 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
                 loss = loss_fct(logits, labels)
 
         if not return_dict:
-            output = (logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else outputs
+            output = (logits,) + encoder_outputs[2:]
+            return ((loss,) + output) if loss is not None else encoder_outputs
 
         return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
+            hidden_states=encoder_outputs.hidden_states,
+            attentions=encoder_outputs.attentions,
         )
 
 
