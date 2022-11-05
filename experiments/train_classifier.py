@@ -295,16 +295,16 @@ def main():
             label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
         # Use simplified descriptors, e.g., EUROVOC 100153 ->  `employment`
         elif data_args.label_descriptors_mode == 'simplified':
-            label_desc2id = {label_desc[1].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
-            label_id2desc = {idx: label_desc[1].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
+            label_desc2id = {label_desc[1]: idx for idx, label_desc in enumerate(label_descs)}
+            label_id2desc = {idx: label_desc[1] for idx, label_desc in enumerate(label_descs)}
         # Use number descriptors, e.g., EUROVOC 100153 ->  `11`
         elif data_args.label_descriptors_mode == 'numbers':
             label_desc2id = {str(idx+1): idx for idx, _ in enumerate(label_descs)}
             label_id2desc = {idx: str(idx + 1) for idx, _ in enumerate(label_descs)}
     else:
         # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
-        label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
-        label_id2desc = {idx: label_desc[0].replace(',', '').lower() for idx, label_desc in enumerate(label_descs)}
+        label_desc2id = {label_desc[0]: idx for idx, label_desc in enumerate(label_descs)}
+        label_id2desc = {idx: label_desc[0] for idx, label_desc in enumerate(label_descs)}
 
     print(f'LabelDesc2Id: {label_desc2id}')
 
