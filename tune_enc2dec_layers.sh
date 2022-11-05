@@ -17,7 +17,7 @@ do
     python experiments/train_classifier.py \
     --model_name_or_path ${MODEL_NAME} \
     --t5_enc2dec true \
-    --n_dec_layers ${DEC_LAYERS}
+    --n_dec_layers ${DEC_LAYERS} \
     --dataset_name ${DATASET} \
     --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-dec-${DEC_LAYERS}/fp32/seed_${SEED} \
     --max_seq_length 512 \
