@@ -186,6 +186,7 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
             decoder_config.is_encoder_decoder = False
             decoder_config.num_layers = config.num_decoder_layers
             self.decoder = T5Stack(decoder_config, self.shared)
+            self.decoder.block = self.decoder.block[:config.n_dec_layers]
             self.classifier = Pooler(config)
         else:
             self.classifier = Pooler(config)

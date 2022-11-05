@@ -11,15 +11,14 @@ def main():
     # Required arguments
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='uklex-l1')
-    parser.add_argument('--optimizer', default='adafactor')
-    parser.add_argument('--fp', default='fp16')
+    parser.add_argument('--optimizer', default='adamw_torch')
     config = parser.parse_args()
 
     print('-' * 100)
     print(config.dataset.upper())
 
     for heads in [1, 4, 6, 12]:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-lwan-v2-heads-{heads}'
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-lwan-v2-heads-{heads}/fp32'
         print('-' * 100)
         print(f'{f"LWAN-HEADS-{heads}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)

@@ -153,12 +153,16 @@ class ModelArguments:
         default=False,
         metadata={"help": "Whether the model is a seq2seq classification model, similar to T5Enc Liu et al. (2022)."},
     )
+    n_dec_layers: bool = field(
+        default=-1,
+        metadata={"help": "Number of decoder layers for T5Enc."},
+    )
     use_lwan: bool = field(
         default=False,
         metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN)."},
     )
     lwan_heads: int = field(
-        default=-1,
+        default=1,
         metadata={"help": "Number of Label-Wise Attention Heads."},
     )
     cache_dir: Optional[str] = field(
@@ -338,6 +342,7 @@ def main():
         config.use_lwan = model_args.use_lwan
         config.t5_enc2dec = model_args.t5_enc2dec
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
+        config.n_dec_layers = model_args.n_dec_layers if model_args.lwan_heads > 0 else config.num_decoder_layers
         model = T5ForSequenceClassificatiom.from_pretrained(
             model_args.model_name_or_path,
             from_tf=bool(".ckpt" in model_args.model_name_or_path),

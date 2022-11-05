@@ -3,23 +3,23 @@ BATCH_SIZE=16
 DATASET='uklex-l1'
 USE_LWAN=true
 GEN_MAX_LENGTH=32
-TRAINING_MODE='lwan-v2'
+TRAINING_MODE='enc2dec'
 OPTIMIZER='adamw_torch'
 LEARNING_RATE=3e-5
 export PYTHONPATH=.
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 export TOKENIZERS_PARALLELISM=false
 
-for HEADS in 4 6 12
+for DEC_LAYERS in 1 4 6
 do
   for SEED in 21 32 84
   do
     python experiments/train_classifier.py \
     --model_name_or_path ${MODEL_NAME} \
-    --use_lwan ${USE_LWAN} \
-    --lwan_heads ${HEADS} \
+    --t5_enc2dec true \
+    --n_dec_layers ${DEC_LAYERS}
     --dataset_name ${DATASET} \
-    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-heads-${HEADS}/fp32/seed_${SEED} \
+    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-dec-${DEC_LAYERS}/fp32/seed_${SEED} \
     --max_seq_length 512 \
     --do_train \
     --do_eval \
@@ -43,4 +43,4 @@ do
 done
 
 
-python report_lwan_head_results.py
+python report_enc2dec_results.py

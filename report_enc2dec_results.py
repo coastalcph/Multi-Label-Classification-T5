@@ -11,16 +11,17 @@ def main():
     # Required arguments
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='uklex-l1')
-    parser.add_argument('--optimizer', default='adafactor')
+    parser.add_argument('--optimizer', default='adamw_torch')
+    parser.add_argument('--fp', default='fp32')
     config = parser.parse_args()
 
     print('-' * 100)
     print(config.dataset.upper())
 
-    for label_desc_type in ['original', 'numbers', 'simplified']:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-seq2seq-{label_desc_type}/fp16'
+    for dec_layers in [1, 4, 6]:
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-enc2dec-{dec_layers}/fp32'
         print('-' * 100)
-        print(f'{f"{label_desc_type}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
+        print(f'{f"ENC2DEC-{dec_layers}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)
         for seed in [21, 32, 42, 84]:
             seed = f'seed_{seed}'
