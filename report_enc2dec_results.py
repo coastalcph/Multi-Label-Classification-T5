@@ -19,7 +19,7 @@ def main():
     print(config.dataset.upper())
 
     for dec_layers in [1, 4, 6]:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-enc2dec-{dec_layers}/fp32'
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-enc2dec-dec-{dec_layers}/fp32'
         print('-' * 100)
         print(f'{f"ENC2DEC-{dec_layers}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)
