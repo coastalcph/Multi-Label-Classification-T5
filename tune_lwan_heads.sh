@@ -3,20 +3,21 @@ BATCH_SIZE=16
 DATASET='uklex-l1'
 USE_LWAN=true
 GEN_MAX_LENGTH=32
-TRAINING_MODE='lwan-v2'
+TRAINING_MODE='lwan-v3'
 OPTIMIZER='adamw_torch'
 LEARNING_RATE=3e-5
 export PYTHONPATH=.
 export CUDA_VISIBLE_DEVICES=0
 export TOKENIZERS_PARALLELISM=false
 
-for HEADS in 4 6 12
+for HEADS in 1 4 6 12
 do
   for SEED in 21 32 84
   do
     python experiments/train_classifier.py \
     --model_name_or_path ${MODEL_NAME} \
     --use_lwan ${USE_LWAN} \
+    --lwan_version 3 \
     --lwan_heads ${HEADS} \
     --dataset_name ${DATASET} \
     --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-heads-${HEADS}/fp32/seed_${SEED} \

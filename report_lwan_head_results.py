@@ -18,7 +18,7 @@ def main():
     print(config.dataset.upper())
 
     for heads in [1, 4, 6, 12]:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-lwan-v2-heads-{heads}/fp32'
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-lwan-v3-heads-{heads}/fp32'
         print('-' * 100)
         print(f'{f"LWAN-HEADS-{heads}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)

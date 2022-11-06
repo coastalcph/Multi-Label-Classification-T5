@@ -153,12 +153,16 @@ class ModelArguments:
         default=False,
         metadata={"help": "Whether the model is a seq2seq classification model, similar to T5Enc Liu et al. (2022)."},
     )
-    n_dec_layers: bool = field(
+    n_dec_layers: int = field(
         default=-1,
         metadata={"help": "Number of decoder layers for T5Enc."},
     )
     use_lwan: bool = field(
         default=False,
+        metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN)."},
+    )
+    lwan_version: int = field(
+        default=3,
         metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN)."},
     )
     lwan_heads: int = field(
@@ -340,6 +344,7 @@ def main():
     else:
         # Register pooling method to config
         config.use_lwan = model_args.use_lwan
+        config.lwan_version = model_args.lwan_version
         config.t5_enc2dec = model_args.t5_enc2dec
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         config.n_dec_layers = model_args.n_dec_layers if model_args.lwan_heads > 0 else config.num_decoder_layers
