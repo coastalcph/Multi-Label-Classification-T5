@@ -57,6 +57,30 @@ class Pooler(nn.Module):
         return logits
 
 
+class LabelWisePooler(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.d_model, config.d_model)
+        self.activation = nn.Tanh()
+        classifier_dropout = (
+            config.dropout_rate if config.dropout_rate is not None else 0.0
+        )
+        self.dropout = nn.Dropout(classifier_dropout)
+        self.classifier = nn.Linear(config.d_model, 1)
+
+    def forward(self,
+                hidden_states: Optional[torch.FloatTensor],
+                attention_mask: Optional[torch.FloatTensor] = None,
+                ) -> torch.Tensor:
+        # We "pool" the model by simply taking the hidden state corresponding
+        # to the last eos token.
+        pooled_output = self.dense(hidden_states)
+        pooled_output = self.activation(pooled_output)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
+        return logits.squeeze(dim=1)
+
+
 class LabelWiseAttentionV1(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -175,9 +199,6 @@ class LabelWiseAttentionV3(nn.Module):
         self.label_outputs = nn.Parameter(torch.Tensor(self.num_labels, config.d_model),
                                           requires_grad=True)
 
-        self.label_output_biases = nn.Parameter(torch.zeros(self.num_labels, ),
-                                                requires_grad=True)
-
         # init label-related matrices
         self.label_queries.data.normal_(mean=0.0, std=0.02)
         self.label_outputs.data.normal_(mean=0.0, std=0.02)
@@ -214,7 +235,7 @@ class LabelWiseAttentionV3(nn.Module):
         context_layer = context_layer.view(new_context_layer_shape)
 
         # Compute label scores / outputs
-        return torch.sum(context_layer * self.label_outputs, dim=-1) + self.label_output_biases.repeat(hidden_states.size(0), 1)
+        return torch.sum(context_layer * self.label_outputs, dim=-1)
 
 
 class T5ForSequenceClassificatiom(T5PreTrainedModel):
@@ -253,7 +274,10 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
             decoder_config.num_layers = config.num_decoder_layers
             self.decoder = T5Stack(decoder_config, self.shared)
             self.decoder.block = self.decoder.block[:config.n_dec_layers]
-            self.classifier = Pooler(config)
+            if self.t5_enc2dec_mode == 'single-step':
+                self.classifier = Pooler(config)
+            else:
+                self.classifier = LabelWisePooler(config)
         else:
             self.classifier = Pooler(config)
 
