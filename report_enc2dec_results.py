@@ -48,6 +48,7 @@ def main():
                 print(report_line)
             except:
                 continue
+        print('-' * 100)
         report_line = f'EPOCH: {"N/A"} | '
         report_line += f'MICRO-F1: {np.mean(scores["eval_micro-f1"]) * 100:.1f}\t'
         report_line += f'MACRO-F1: {np.mean(scores["eval_macro-f1"]) * 100:.1f}\t'

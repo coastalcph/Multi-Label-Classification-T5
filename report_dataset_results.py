@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='uklex-l1')
     parser.add_argument('--optimizer', default='adafactor')
-    parser.add_argument('--fp', default='fp16')
+    parser.add_argument('--fp', default='fp32')
     config = parser.parse_args()
 
     print('-' * 100)
@@ -50,6 +50,7 @@ def main():
                 print(report_line)
             except:
                 continue
+        print('-' * 100)
         report_line = f'EPOCH: {"N/A"} | '
         report_line += f'MICRO-F1: {np.mean(scores["eval_micro-f1"]) * 100:.1f}\t'
         report_line += f'MACRO-F1: {np.mean(scores["eval_macro-f1"]) * 100:.1f}\t'
