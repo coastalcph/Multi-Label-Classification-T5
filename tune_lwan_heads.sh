@@ -1,13 +1,13 @@
 MODEL_NAME='t5-base'
 BATCH_SIZE=16
-DATASET='uklex-l1'
+DATASET='eurlex-l2'
 USE_LWAN=true
 GEN_MAX_LENGTH=32
 TRAINING_MODE='lwan-v3'
-OPTIMIZER='adamw_torch'
-LEARNING_RATE=3e-5
+OPTIMIZER='adafactor'
+LEARNING_RATE=1e-4
 export PYTHONPATH=.
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=2
 export TOKENIZERS_PARALLELISM=false
 
 for HEADS in 1 4 6 12
@@ -39,7 +39,7 @@ do
     --seed ${SEED} \
     --optim ${OPTIMIZER} \
     --warmup_ratio 0.05 \
-    --lr_scheduler_type cosine
+    --lr_scheduler_type constant_with_warmup
   done
 done
 
