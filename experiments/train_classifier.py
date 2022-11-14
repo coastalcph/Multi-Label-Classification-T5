@@ -296,7 +296,7 @@ def main():
         raise Exception(f'Dataset {data_args.dataset_name} is not supported!')
 
     # Label descriptors mode
-    if model_args.seq2seq:
+    if model_args.seq2seq or model_args.t5_enc2dec:
         # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
         if data_args.label_descriptors_mode == 'original':
             label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
@@ -401,10 +401,11 @@ def main():
                 batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
             elif model_args.t5_enc2dec_mode == 'multi-step':
                 decoder_inputs = tokenizer(
-                    [' '.join([label_id2desc[label] for label in label_id2desc]) for _ in examples],
+                    [' '.join([label_id2desc[label] for label in label_id2desc]) for _ in examples['text']],
                     padding=False,
                     max_length=len(label_id2desc),
                     truncation=True,
+                    add_special_tokens=False
                 )
                 batch['decoder_input_ids'] = decoder_inputs['input_ids']
                 batch['decoder_attention_mask'] = decoder_inputs['attention_mask']

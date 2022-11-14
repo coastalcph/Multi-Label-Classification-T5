@@ -79,7 +79,7 @@ class LabelWisePooler(nn.Module):
                 attention_mask: Optional[torch.FloatTensor] = None,
                 ) -> torch.Tensor:
         # We use a different head per label
-        lw_encodings = hidden_states * self.label_dense
+        lw_encodings = hidden_states * self.label_dense  # (10, 20, 512) * (20, 512) = (10, 20, 512)
         lw_encodings = self.activation(lw_encodings)
         lw_encodings = self.dropout(lw_encodings)
 
