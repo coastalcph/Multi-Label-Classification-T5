@@ -1,7 +1,7 @@
 MODEL_NAME='t5-base'
 BATCH_SIZE=8
 DATASET='uklex-l1'
-GEN_MAX_LENGTH=32
+GEN_MAX_LENGTH=128
 TRAINING_MODE='seq2seq'
 OPTIMIZER='adafactor'
 LEARNING_RATE=1e-4
@@ -9,7 +9,7 @@ export PYTHONPATH=.
 export CUDA_VISIBLE_DEVICES=5
 export TOKENIZERS_PARALLELISM=false
 
-for LABEL_DESC_TYPE in original numbers simplified
+for LABEL_DESC_TYPE in original
 do
   for SEED in 21 32 42 84
   do
