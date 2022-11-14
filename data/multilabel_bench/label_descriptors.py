@@ -2,7 +2,7 @@ ICD9_CONCEPTS = {
     "level_1": {
         "001-139": ("Infection and Parasitic Diseases", "infections"),
         "140-239": ("Neoplasms", "cancer"),
-        "240-279": ("Endocrine, Nutritional and Metabolic Diseases and Immunity Disorders", "metabolic"),
+        "240-279": ("Endocrine Nutritional and Metabolic Diseases and Immunity Disorders", "metabolic"),
         "280-289": ("Diseases of Blood and Blood Forming Organs", "blood"),
         "290-319": ("Mental Disorders", "mental"),
         "320-389": ("Diseases of Nervous System and Sense Organs", "nervous"),
