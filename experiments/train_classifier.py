@@ -157,7 +157,7 @@ class ModelArguments:
         default=-1,
         metadata={"help": "Number of decoder layers for T5Enc."},
     )
-    t5_enc2dec_mode: int = field(
+    t5_enc2dec_mode: str = field(
         default="single-step",
         metadata={"help": "Mode for T5Enc (single-step, or multi-step)."},
     )
