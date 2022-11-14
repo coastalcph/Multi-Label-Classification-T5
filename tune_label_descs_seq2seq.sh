@@ -6,19 +6,19 @@ TRAINING_MODE='seq2seq'
 OPTIMIZER='adafactor'
 LEARNING_RATE=1e-4
 export PYTHONPATH=.
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=5
 export TOKENIZERS_PARALLELISM=false
 
-for LABEL_DESC_TYPE in original numbers
+for LABEL_DESC_TYPE in original numbers simplified
 do
-  for SEED in 21 32 84
+  for SEED in 21 32 42 84
   do
     python experiments/train_classifier.py \
     --model_name_or_path ${MODEL_NAME} \
     --seq2seq true \
     --label_descriptors_mode ${LABEL_DESC_TYPE} \
     --dataset_name ${DATASET} \
-    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}/fp16/seed_${SEED} \
+    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}/fp32/seed_${SEED} \
     --max_seq_length 512 \
     --do_train \
     --do_eval \
@@ -35,8 +35,8 @@ do
     --per_device_train_batch_size ${BATCH_SIZE} \
     --per_device_eval_batch_size ${BATCH_SIZE} \
     --seed ${SEED} \
-    --fp16 \
-    --fp16_full_eval \
+    --gradient_accumulation_steps 2 \
+    --eval_accumulation_steps 2 \
     --optim ${OPTIMIZER} \
     --warmup_ratio 0.05 \
     --lr_scheduler_type constant_with_warmup

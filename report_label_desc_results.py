@@ -19,7 +19,7 @@ def main():
     print(config.dataset.upper())
 
     for label_desc_type in ['original', 'numbers', 'simplified']:
-        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-seq2seq-{label_desc_type}/fp16'
+        BASE_DIR = f'{DATA_DIR}/logs/{config.optimizer}/{config.dataset}/{config.model}-seq2seq-{label_desc_type}/fp32'
         print('-' * 100)
         print(f'{f"{label_desc_type}":<15} | {"VALIDATION":<40} | {"TEST":<40}')
         print('-' * 100)
