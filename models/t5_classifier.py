@@ -66,19 +66,24 @@ class LabelWisePooler(nn.Module):
             config.dropout_rate if config.dropout_rate is not None else 0.0
         )
         self.dropout = nn.Dropout(classifier_dropout)
-        self.classifier = nn.Linear(config.d_model, 1)
+        self.label_outputs = nn.Parameter(torch.Tensor(config.num_labels, config.d_model),
+                                          requires_grad=True)
+        self.label_dense = nn.Parameter(torch.Tensor(config.num_labels, config.d_model),
+                                        requires_grad=True)
+        self.label_biases = torch.zeros(config.num_labels, requires_grad=True)
+        self.label_dense.data.normal_(mean=0.0, std=0.02)
+        self.label_outputs.data.normal_(mean=0.0, std=0.02)
 
     def forward(self,
                 hidden_states: Optional[torch.FloatTensor],
                 attention_mask: Optional[torch.FloatTensor] = None,
                 ) -> torch.Tensor:
-        # We "pool" the model by simply taking the hidden state corresponding
-        # to the last eos token.
-        pooled_output = self.dense(hidden_states)
-        pooled_output = self.activation(pooled_output)
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
-        return logits.squeeze(dim=1)
+        # We use a different head per label
+        lw_encodings = hidden_states * self.label_dense
+        lw_encodings = self.activation(lw_encodings)
+        lw_encodings = self.dropout(lw_encodings)
+
+        return torch.sum(lw_encodings * self.label_outputs, dim=-1) + self.label_biases
 
 
 class LabelWiseAttentionV1(nn.Module):
@@ -251,6 +256,7 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
         super().__init__(config)
         self.use_lwan = config.use_lwan
         self.t5_enc2dec = config.t5_enc2dec
+        self.t5_enc2dec_mode = config.t5_enc2dec_mode
         self.model_dim = config.d_model
         self.num_labels = config.num_labels
         self.shared = nn.Embedding(config.vocab_size, config.d_model)
@@ -404,13 +410,20 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
 if __name__ == "__main__":
     from transformers import AutoTokenizer, AutoConfig
     config = AutoConfig.from_pretrained('t5-base')
-    config.use_lwan = True
-    config.t5_enc2dec = False
-    config.lwan_version = 3
+    config.use_lwan = False
+    config.t5_enc2dec = True
+    config.lwan_version = 1
+    config.t5_enc2dec_mode = 'multi-step'
+    config.n_dec_layers = 1
     config.lwan_heads = 12
     config.num_labels = 20
     model = T5ForSequenceClassificatiom.from_pretrained('t5-base', config=config)
     tokenizer = AutoTokenizer.from_pretrained('t5-base')
     inputs = tokenizer(['dog ' * random.randint(400, 512) for _ in range(3)], truncation=True, max_length=512, padding='max_length', return_tensors='pt')
-    model(inputs['input_ids'], attention_mask=inputs['attention_mask'], labels=torch.zeros(len(inputs['input_ids']), 20))
+    decode_inputs = tokenizer(['dog ' * 20 for _ in range(3)], truncation=True, max_length=20,
+                       padding='max_length', return_tensors='pt')
+    model(inputs['input_ids'], attention_mask=inputs['attention_mask'],
+          decoder_input_ids = decode_inputs['input_ids'],
+          decoder_attention_mask = decode_inputs['attention_mask'],
+          labels=torch.zeros(len(inputs['input_ids']), 20))
     print()

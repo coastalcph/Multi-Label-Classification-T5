@@ -157,6 +157,10 @@ class ModelArguments:
         default=-1,
         metadata={"help": "Number of decoder layers for T5Enc."},
     )
+    t5_enc2dec_mode: int = field(
+        default="single-step",
+        metadata={"help": "Mode for T5Enc (single-step, or multi-step)."},
+    )
     use_lwan: bool = field(
         default=False,
         metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN)."},
@@ -346,6 +350,7 @@ def main():
         config.use_lwan = model_args.use_lwan
         config.lwan_version = model_args.lwan_version
         config.t5_enc2dec = model_args.t5_enc2dec
+        config.t5_enc2dec_mode = model_args.t5_enc2dec_mode
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         config.n_dec_layers = model_args.n_dec_layers if model_args.lwan_heads > 0 else config.num_decoder_layers
         model = T5ForSequenceClassificatiom.from_pretrained(
@@ -384,7 +389,7 @@ def main():
             )
             batch['labels'] = label_batch['input_ids']
         else:
-            if model_args.t5_enc2dec:
+            if model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'single-step':
                 decoder_inputs = tokenizer(
                     ['label' for _ in examples["text"]],
                     padding=False,
@@ -394,6 +399,16 @@ def main():
                 )
                 batch['decoder_input_ids'] = decoder_inputs['input_ids']
                 batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
+            elif model_args.t5_enc2dec_mode == 'multi-step':
+                decoder_inputs = tokenizer(
+                    [' '.join([label_id2desc[label] for label in label_id2desc]) for _ in examples],
+                    padding=False,
+                    max_length=len(label_id2desc),
+                    truncation=True,
+                )
+                batch['decoder_input_ids'] = decoder_inputs['input_ids']
+                batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
+
             if not model_args.use_lwan and not model_args.t5_enc2dec:
                 for idx, _ in enumerate(batch['input_ids']):
                     batch['input_ids'][idx][-1] = tokenizer.eos_token_id

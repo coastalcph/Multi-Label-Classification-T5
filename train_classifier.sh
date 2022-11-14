@@ -1,16 +1,17 @@
 MODEL_NAME='t5-base'
 BATCH_SIZE=16
-DATASET='eurlex-l1'
+DATASET='uklex-l1'
 USE_LWAN=false
 USE_T5ENC2DEC=true
 SEQ2SEQ=false
 GEN_MAX_LENGTH=32
-TRAINING_MODE='standard'
-OPTIMIZER='adamw_torch'
-SCHEDULER='cosine'
-LEARNING_RATE=3e-5
+T5ENC2DEC_MODE='single-step'
+TRAINING_MODE='t5enc-single'
+OPTIMIZER='adafactor'
+SCHEDULER='constant_with_warmup'
+LEARNING_RATE=1e-4
 export PYTHONPATH=.
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=4
 export TOKENIZERS_PARALLELISM=false
 
 for SEED in 21 32 42 84
@@ -19,7 +20,9 @@ do
   --model_name_or_path ${MODEL_NAME} \
   --seq2seq ${SEQ2SEQ} \
   --use_lwan ${USE_LWAN} \
+  --lwan_version 1 \
   --t5_enc2dec ${USE_T5ENC2DEC} \
+  --t5_enc2dec_mode ${T5ENC2DEC_MODE} \
   --dataset_name ${DATASET} \
   --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}/fp32/seed_${SEED} \
   --max_seq_length 512 \
