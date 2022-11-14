@@ -69,8 +69,9 @@ class LabelWisePooler(nn.Module):
                                           requires_grad=True)
         self.label_dense = nn.Parameter(torch.Tensor(config.num_labels, config.d_model),
                                         requires_grad=True)
-        self.label_biases = torch.zeros(config.num_labels, requires_grad=True)
+        self.label_biases = nn.Parameter(torch.Tensor(config.num_labels, ), requires_grad=True)
         self.label_dense.data.normal_(mean=0.0, std=0.02)
+        self.label_biases.data.normal_(mean=0.0, std=0.00)
         self.label_outputs.data.normal_(mean=0.0, std=0.02)
 
     def forward(self,
