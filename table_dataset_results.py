@@ -40,8 +40,8 @@ def main():
                     continue
                 dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
                                 f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f}'
-            dataset_line += f' \\'
-            print(dataset_line)
+        dataset_line += f' \\'
+        print(dataset_line)
 
 
 if __name__ == '__main__':
