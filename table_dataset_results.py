@@ -17,9 +17,6 @@ def main():
     parser.add_argument('--subset', default='predict')
     config = parser.parse_args()
 
-    print('-' * 100)
-    print(config.dataset.upper())
-
     for mode in [('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('seq2seq', 'SEQ2SEQ'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
         for dataset in ['uklex', 'eurlex', 'mimic', 'bioasq']:
             dataset_line = f'{mode[1]:>10}'
@@ -41,7 +38,8 @@ def main():
                         scores['predict_macro-f1'].append(test_macro_f1)
                 except:
                     continue
-                dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]):.2f} $\pm$ {np.std(scores[f"{config.subset}_micro-f1"]):.2f}'
+                dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
+                                f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f}'
             dataset_line += f' \\'
             print(dataset_line)
 
