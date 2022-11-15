@@ -18,13 +18,13 @@ def main():
     config = parser.parse_args()
 
     for mode in [('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('seq2seq', 'SEQ2SEQ'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
+        dataset_line = f'{mode[1]:>10}'
         for dataset in ['uklex', 'eurlex', 'mimic', 'bioasq']:
-            dataset_line = f'{mode[1]:>10}'
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
             scores = {'eval_micro-f1': [], 'eval_macro-f1': [], 'predict_micro-f1': [], 'predict_macro-f1': []}
+            dataset_line += ' & '
             for seed in [21, 32, 42, 84]:
                 seed = f'seed_{seed}'
-                dataset_line += ' & '
                 try:
                     with open(os.path.join(BASE_DIR, seed, 'all_results.json')) as json_file:
                         json_data = json.load(json_file)
@@ -39,8 +39,10 @@ def main():
                 except:
                     continue
                 dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
-                                f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f}'
-        dataset_line += f' \\'
+                                f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} & '
+                dataset_line += f'{np.mean(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f} ' \
+                                f'$\pm$ {np.std(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f}'
+        dataset_line += f' \\\\'
         print(dataset_line)
 
 
