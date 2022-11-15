@@ -6,6 +6,7 @@ import logging
 import os
 import pickle
 import random
+import re
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
@@ -45,6 +46,11 @@ require_version("datasets>=2.0.0", "To fix: pip install -r examples/pytorch/text
 
 logger = logging.getLogger(__name__)
 
+from tokenizers.normalizers import NFKD
+from tokenizers.pre_tokenizers import WhitespaceSplit
+
+normalizer = NFKD()
+pre_tokenizer = WhitespaceSplit()
 
 @dataclass
 class DataTrainingArguments:
@@ -370,6 +376,18 @@ def main():
         padding = False
 
     def preprocess_function(examples):
+        if 'mimic' in data_args.dataset_name:
+            for idx, text in enumerate(examples['text']):
+                if 'Service:' in text:
+                    text = 'Service:' + re.split('Service:', text, maxsplit=1)[1]
+                elif 'Sex:' in text:
+                    text = re.split('\n', re.split('Sex:', text, maxsplit=1)[1], maxsplit=1)[1]
+                text = normalizer.normalize_str(text)
+                text = ' '.join([token[0] for token in pre_tokenizer.pre_tokenize_str(text)])
+                text = re.sub('[^a-z ]{2,}', ' ', text, flags=re.IGNORECASE)
+                text = re.sub(' +', ' ', text, flags=re.IGNORECASE)
+                examples['text'][idx] = text
+
         # Tokenize the texts
         batch = tokenizer(
             examples["text"],

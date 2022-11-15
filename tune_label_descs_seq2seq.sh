@@ -1,6 +1,6 @@
 MODEL_NAME='t5-base'
 BATCH_SIZE=8
-DATASET='uklex-l1'
+DATASET='mimic-l1'
 GEN_MAX_LENGTH=128
 TRAINING_MODE='seq2seq'
 OPTIMIZER='adafactor'
