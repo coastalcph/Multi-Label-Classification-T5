@@ -16,6 +16,8 @@ def main():
     parser.add_argument('--level', default='l1')
     parser.add_argument('--subset', default='predict')
     config = parser.parse_args()
+    bracket = '\\small{'
+    closing_bracket = '}'
 
     for mode in [('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('seq2seq', 'SEQ2SEQ'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
         dataset_line = f'{mode[1]:>10}'
@@ -38,10 +40,10 @@ def main():
                         scores['predict_macro-f1'].append(test_macro_f1)
                 except:
                     continue
-            dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
-                            f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} & '
-            dataset_line += f'{np.mean(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f} ' \
-                            f'$\pm$ {np.std(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f}'
+            dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) * 100 if len(scores[f"{config.subset}_micro-f1"]) else 0:.1f} ' \
+                            f'$\pm$ {bracket}{np.std(scores[f"{config.subset}_micro-f1"]) * 100 if len(scores[f"{config.subset}_micro-f1"]) else 0:.1f}{closing_bracket} & '
+            dataset_line += f'{np.mean(scores[f"{config.subset}_macro-f1"])  * 100if len(scores[f"{config.subset}_macro-f1"]) else 0:.1f} ' \
+                            f'$\pm$ {bracket}{np.std(scores[f"{config.subset}_macro-f1"]) * 100 if len(scores[f"{config.subset}_macro-f1"]) else 0:.1f}{closing_bracket}'
         dataset_line += f' \\\\'
         print(dataset_line)
 
