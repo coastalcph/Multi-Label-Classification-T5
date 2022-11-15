@@ -38,10 +38,10 @@ def main():
                         scores['predict_macro-f1'].append(test_macro_f1)
                 except:
                     continue
-                dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
-                                f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} & '
-                dataset_line += f'{np.mean(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f} ' \
-                                f'$\pm$ {np.std(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f}'
+            dataset_line += f'{np.mean(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} ' \
+                            f'$\pm$ {np.std(scores[f"{config.subset}_micro-f1"]) if len(scores[f"{config.subset}_micro-f1"]) else 0:.2f} & '
+            dataset_line += f'{np.mean(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f} ' \
+                            f'$\pm$ {np.std(scores[f"{config.subset}_macro-f1"]) if len(scores[f"{config.subset}_macro-f1"]) else 0:.2f}'
         dataset_line += f' \\\\'
         print(dataset_line)
 
