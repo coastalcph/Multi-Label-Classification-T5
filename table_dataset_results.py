@@ -19,7 +19,7 @@ def main():
     bracket = '\\small{'
     closing_bracket = '}'
 
-    for mode in [('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('seq2seq', 'SEQ2SEQ'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
+    for mode in [('seq2seq-original', 'SEQ2SEQ-ORIGIN'), ('seq2seq-simplified', 'SEQ2SEQ-SIMPLE'), ('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
         dataset_line = f'{mode[1]:>10}'
         for dataset in ['uklex', 'eurlex', 'mimic', 'bioasq']:
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
