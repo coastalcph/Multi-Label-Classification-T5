@@ -21,7 +21,7 @@ def main():
 
     for mode in [('seq2seq-original', 'SEQ2SEQ-ORIGIN'), ('seq2seq-simplified', 'SEQ2SEQ-SIMPLE'), ('standard', 'ENC-HEAD'), ('lwan', 'LWAN'), ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
         dataset_line = f'{mode[1]:>10}'
-        for dataset in ['uklex', 'eurlex', 'mimic', 'bioasq']:
+        for dataset in ['uklex', 'eurlex', 'bioasq', 'mimic']:
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
             scores = {'eval_micro-f1': [], 'eval_macro-f1': [], 'predict_micro-f1': [], 'predict_macro-f1': []}
             dataset_line += ' & '
