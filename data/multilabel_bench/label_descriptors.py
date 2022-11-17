@@ -443,7 +443,7 @@ UKLEX_CONCEPTS = {'level_1': {'AGRICULTURE & FOOD': ('Agriculture & Food', 'agri
                               'TAXATION': ('Taxation', 'tax'),
                               'TELECOMMUNICATIONS': ('Telecommunications', 'telecom'),
                               'TRANSPORTATION': ('Transportation', 'transport')},
-                  'level_2': {'Agriculture': ('Agriculture', 'agriculture'),
+                  'level_2': {'AGRICULTURE': ('Agriculture', 'agriculture'),
                               'AIR TRANSPORT': ('Air Transport', 'airplane'),
                               'ANIMALS': ('Animals', 'animals'),
                               'BANKING': ('Banking', 'banking'),
