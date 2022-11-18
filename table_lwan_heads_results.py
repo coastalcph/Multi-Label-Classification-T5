@@ -19,7 +19,7 @@ def main():
     bracket = '\\small{'
     closing_bracket = '}'
 
-    for mode in [('t5-base-lwan', '1'), ('lwan-v3-heads-4', '4'), ('lwan-v3-heads-6', '6'), ('lwan-v3-heads-12', '12')]:
+    for mode in [('lwan', '1'), ('lwan-v3-heads-4', '4'), ('lwan-v3-heads-6', '6'), ('lwan-v3-heads-12', '12')]:
         dataset_line = f'{mode[1]:>10}'
         for dataset in ['eurlex']:
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
