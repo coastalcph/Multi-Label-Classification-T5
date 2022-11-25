@@ -179,6 +179,10 @@ class ModelArguments:
         default=1,
         metadata={"help": "Number of Label-Wise Attention Heads."},
     )
+    n_beams: int = field(
+        default=4,
+        metadata={"help": "Number of beams for seq2seq."},
+    )
     cache_dir: Optional[str] = field(
         default=None,
         metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
@@ -213,7 +217,7 @@ def main():
         training_args.generation_max_length = data_args.generation_max_length
         training_args.generation_min_length = data_args.generation_min_length
         training_args.word_constraints = data_args.word_constraints
-        training_args.generation_num_beams = 4
+        training_args.generation_num_beams = model_args.n_beams
         training_args.predict_with_generate = True
 
     # Setup distant debugging if needed
@@ -312,13 +316,17 @@ def main():
             label_desc2id = {label_desc[1]: idx for idx, label_desc in enumerate(label_descs)}
             label_id2desc = {idx: label_desc[1] for idx, label_desc in enumerate(label_descs)}
         # Use number descriptors, e.g., EUROVOC 100153 ->  `11`
-        elif data_args.label_descriptors_mode == 'numbers':
+        elif data_args.label_descriptors_mode == 'numbers' and model_args.seq2seq:
             label_desc2id = {str(idx+1): idx for idx, _ in enumerate(label_descs)}
             label_id2desc = {idx: str(idx + 1) for idx, _ in enumerate(label_descs)}
-    else:
-        # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
-        label_desc2id = {label_desc[0]: idx for idx, label_desc in enumerate(label_descs)}
-        label_id2desc = {idx: label_desc[0] for idx, label_desc in enumerate(label_descs)}
+        # Use pseudo number descriptors, e.g., EUROVOC 100153 ->  `<extra_id_11>`
+        elif data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+            label_desc2id = {f'<extra_id_{idx}>': idx for idx in range(num_labels)}
+            label_id2desc = {idx: f'<extra_id_{idx}>' for idx in range(num_labels)}
+        else:
+            # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
+            label_desc2id = {label_desc[0]: idx for idx, label_desc in enumerate(label_descs)}
+            label_id2desc = {idx: label_desc[0] for idx, label_desc in enumerate(label_descs)}
 
     print(f'LabelDesc2Id: {label_desc2id}')
 
@@ -343,6 +351,10 @@ def main():
         revision=model_args.model_revision,
     )
 
+    if data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+        new_tokens = [f'<extra_id_{idx+100}>' for idx in range(max(0, num_labels - 100))]
+        tokenizer.add_tokens(new_tokens)
+
     if model_args.seq2seq:
         model = AutoModelForSeq2SeqLM.from_pretrained(
             model_args.model_name_or_path,
@@ -366,6 +378,8 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
         )
+        if data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+            model.resize_token_embeddings(len(tokenizer))
 
     # Preprocessing the datasets
     # Padding strategy
