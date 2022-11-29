@@ -315,12 +315,8 @@ def main():
         elif data_args.label_descriptors_mode == 'simplified':
             label_desc2id = {label_desc[1]: idx for idx, label_desc in enumerate(label_descs)}
             label_id2desc = {idx: label_desc[1] for idx, label_desc in enumerate(label_descs)}
-        # Use number descriptors, e.g., EUROVOC 100153 ->  `11`
-        elif data_args.label_descriptors_mode == 'numbers' and model_args.seq2seq:
-            label_desc2id = {str(idx+1): idx for idx, _ in enumerate(label_descs)}
-            label_id2desc = {idx: str(idx + 1) for idx, _ in enumerate(label_descs)}
         # Use pseudo number descriptors, e.g., EUROVOC 100153 ->  `<extra_id_11>`
-        elif data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+        elif data_args.label_descriptors_mode == 'numbers':
             label_desc2id = {f'<extra_id_{idx}>': idx for idx in range(num_labels)}
             label_id2desc = {idx: f'<extra_id_{idx}>' for idx in range(num_labels)}
         else:
@@ -351,7 +347,7 @@ def main():
         revision=model_args.model_revision,
     )
 
-    if data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+    if data_args.label_descriptors_mode == 'numbers':
         new_tokens = [f'<extra_id_{idx+100}>' for idx in range(max(0, num_labels - 100))]
         tokenizer.add_tokens(new_tokens)
 
@@ -378,7 +374,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
         )
-        if data_args.label_descriptors_mode == 'numbers' and model_args.t5_enc2dec and model_args.t5_enc2dec_mode == 'multi-step':
+        if data_args.label_descriptors_mode == 'numbers':
             model.resize_token_embeddings(len(tokenizer))
 
     # Preprocessing the datasets
