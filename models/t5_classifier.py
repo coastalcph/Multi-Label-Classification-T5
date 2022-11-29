@@ -324,6 +324,8 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
     def set_input_embeddings(self, new_embeddings):
         self.shared = new_embeddings
         self.encoder.set_input_embeddings(new_embeddings)
+        if self.t5_enc2dec:
+            self.decoder.set_input_embeddings(new_embeddings)
 
     def tie_weights(self):
         return

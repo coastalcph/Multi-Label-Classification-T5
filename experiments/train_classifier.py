@@ -16,6 +16,7 @@ from datasets import load_dataset
 from sklearn.metrics import f1_score, classification_report
 from scipy.special import expit
 import glob
+import copy
 import shutil
 
 import transformers
