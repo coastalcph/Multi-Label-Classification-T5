@@ -13,11 +13,11 @@ do
   for SEED in 21 32 42 84
   do
     python experiments/train_classifier.py \
-    --model_name_or_path data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}/fp32/seed_${SEED} \
+    --model_name_or_path data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-original/fp32/seed_${SEED} \
     --seq2seq true \
     --label_descriptors_mode original \
     --dataset_name ${DATASET} \
-    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-${LABEL_DESC_TYPE}-greedy/fp32/seed_${SEED} \
+    --output_dir data/logs/${OPTIMIZER}/${DATASET}/${MODEL_NAME}-${TRAINING_MODE}-original-greedy/fp32/seed_${SEED} \
     --max_seq_length 512 \
     --n_beams  1 \
     --do_eval \
