@@ -332,10 +332,10 @@ def main():
         elif data_args.label_descriptors_mode == 'numbers':
             label_desc2id = {f'<extra_id_{idx}>': idx for idx in range(num_labels)}
             label_id2desc = {idx: f'<extra_id_{idx}>' for idx in range(num_labels)}
-        else:
-            # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
-            label_desc2id = {label_desc[0]: idx for idx, label_desc in enumerate(label_descs)}
-            label_id2desc = {idx: label_desc[0] for idx, label_desc in enumerate(label_descs)}
+    else:
+        # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
+        label_desc2id = {label_desc[0]: idx for idx, label_desc in enumerate(label_descs)}
+        label_id2desc = {idx: label_desc[0] for idx, label_desc in enumerate(label_descs)}
 
     print(f'LabelDesc2Id: {label_desc2id}')
 
