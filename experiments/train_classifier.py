@@ -268,6 +268,7 @@ def main():
 
     # Set seed before initializing model.
     set_seed(training_args.seed)
+    label_list = None
 
     # In distributed training, the load_dataset function guarantees that only one local process can concurrently
     # download the dataset.
@@ -275,20 +276,31 @@ def main():
     if training_args.do_train:
         train_dataset = load_dataset(os.path.join(DATA_DIR, 'multilabel_bench'), data_args.dataset_name, split="train",
                                      cache_dir=model_args.cache_dir, use_auth_token=AUTH_KEY)
+        # Labels
+        label_list = list(
+            range(train_dataset.features['concepts'].feature.num_classes))
+        labels_codes = train_dataset.features['concepts'].feature.names
+        num_labels = len(label_list)
 
     if training_args.do_eval:
         eval_dataset = load_dataset(os.path.join(DATA_DIR, 'multilabel_bench'), data_args.dataset_name, split="validation",
                                     cache_dir=model_args.cache_dir, use_auth_token=AUTH_KEY)
+        if label_list is None:
+            # Labels
+            label_list = list(
+                range(eval_dataset.features['concepts'].feature.num_classes))
+            labels_codes = eval_dataset.features['concepts'].feature.names
+            num_labels = len(label_list)
 
     if training_args.do_predict:
         predict_dataset = load_dataset(os.path.join(DATA_DIR, 'multilabel_bench'), data_args.dataset_name, split="test",
                                        cache_dir=model_args.cache_dir, use_auth_token=AUTH_KEY)
-
-    # Labels
-    label_list = list(
-        range(train_dataset.features['concepts'].feature.num_classes))
-    labels_codes = train_dataset.features['concepts'].feature.names
-    num_labels = len(label_list)
+        if label_list is None:
+            # Labels
+            label_list = list(
+                range(predict_dataset.features['concepts'].feature.num_classes))
+            labels_codes = predict_dataset.features['concepts'].feature.names
+            num_labels = len(label_list)
 
     # Load label descriptors
     if 'eurlex' in data_args.dataset_name:
