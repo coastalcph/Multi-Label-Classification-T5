@@ -10,6 +10,25 @@ from datasets import load_dataset
 from data.multilabel_bench.label_descriptors import *
 from sklearn.metrics import f1_score
 
+def fix_predictions(predictions, label_descs):
+    # Replace corrupted predictions with the first label that fits the starting characters
+
+    label_descs = [label_desc[0].replace(',', '').lower() for label_desc in label_descs]
+
+    for i in range(len(predictions)):
+        preds_list = predictions[i]
+        for j in range(len(preds_list)):
+            if preds_list[j] in label_descs:
+                continue
+            if not len(preds_list[j].strip()):
+                continue
+            for label in label_descs:
+                if label.startswith(preds_list[j]):
+                    print('replacing {} with {}'.format(predictions[i][j], label))
+                    predictions[i][j] = label
+
+    return predictions
+
 def main():
     ''' set default hyperparams in default_hyperparams.py '''
     parser = argparse.ArgumentParser()
@@ -64,15 +83,13 @@ def main():
         with open(os.path.join(f'{DATA_DIR}/predictions/{config.dataset}/seq2seq-original', seed, 'test_predictions.pkl'), 'rb') as pkl_file:
             predictions = pickle.load(pkl_file)
             predictions = [[pred.strip() for pred in predictions_list.split(',')] for predictions_list in predictions]
+            predictions = fix_predictions(predictions, label_descs)
             discrete_predictions = np.zeros((len(predictions), len(label_desc2id)), dtype=np.int32)
             # Text predictions to binary
             for idx, pred_list in enumerate(predictions):
                 for p in pred_list:
                     if p.strip().lower() in label_desc2id:
                         discrete_predictions[idx][label_desc2id[p.strip().lower()]] = 1
-                    else:
-                        # TODO HANDLE UNKNOWN LABELS
-                        continue
         # Compute scores
         macro_f1 = f1_score(y_true=discrete_labels, y_pred=discrete_predictions, average='macro', zero_division=0)
         macro_f1s.append(macro_f1)
