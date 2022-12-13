@@ -36,7 +36,7 @@ def main():
     # Required arguments
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--dataset', default='mimic-l2')
-    parser.add_argument('--subset', default='predict')
+    parser.add_argument('--fix_predictions', default=False, type=bool)
     config = parser.parse_args()
 
     # Load dataset
@@ -83,7 +83,8 @@ def main():
         with open(os.path.join(f'{DATA_DIR}/predictions/{config.dataset}/seq2seq-original', seed, 'test_predictions.pkl'), 'rb') as pkl_file:
             predictions = pickle.load(pkl_file)
             predictions = [[pred.strip() for pred in predictions_list.split(',')] for predictions_list in predictions]
-            predictions = fix_predictions(predictions, label_descs)
+            if config.fix_predictions:
+                predictions = fix_predictions(predictions, label_descs)
             discrete_predictions = np.zeros((len(predictions), len(label_desc2id)), dtype=np.int32)
             # Text predictions to binary
             for idx, pred_list in enumerate(predictions):
@@ -95,9 +96,10 @@ def main():
         macro_f1s.append(macro_f1)
         micro_f1 = f1_score(y_true=discrete_labels, y_pred=discrete_predictions, average='micro', zero_division=0)
         micro_f1s.append(micro_f1)
+        print(f'TRIAL {seed.upper()}: MICRO-F1: {micro_f1 * 100:.1f} MACRO-F1: {macro_f1 * 100:.1f}')
 
     # Print averaged scores
-    print(f'MICRO-F1: {np.mean(micro_f1s)*100:.1f} +/- {np.std(micro_f1s)*100:.1f}\t'
+    print(f'OVERALL: MICRO-F1: {np.mean(micro_f1s)*100:.1f} +/- {np.std(micro_f1s)*100:.1f}\t'
           f'MACRO-F1: {np.mean(macro_f1s)*100:.1f} +/- {np.std(macro_f1s)*100:.1f}')
 
 
