@@ -80,7 +80,7 @@ def main():
     for seed in [21, 32, 42, 84]:
         seed = f'seed_{seed}'
         # Read predictions
-        with open(os.path.join(f'{DATA_DIR}/predictions/{config.dataset}/seq2seq-original', seed, 'test_predictions.pkl'), 'rb') as pkl_file:
+        with open(os.path.join(f'{DATA_DIR}/predictions/{config.dataset}/{config.model}/seq2seq-original', seed, 'test_predictions.pkl'), 'rb') as pkl_file:
             predictions = pickle.load(pkl_file)
             predictions = [[pred.strip() for pred in predictions_list.split(',')] for predictions_list in predictions]
             if config.fix_predictions:

@@ -3,6 +3,7 @@ import shutil
 
 from data import DATA_DIR
 
+MODEL_NAME = 't5-base'
 
 def main():
     os.mkdir(f'{DATA_DIR}/predictions')
@@ -10,9 +11,9 @@ def main():
         for dataset in ['uklex-l1', 'eurlex-l1', 'mimic-l1', 'bioasq-l1', 'uklex-l2', 'eurlex-l2', 'mimic-l2', 'bioasq-l2']:
             if not os.path.exists(f'{DATA_DIR}/predictions/{dataset}'):
                 os.mkdir(f'{DATA_DIR}/predictions/{dataset}')
-            BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}/t5-base-seq2seq-{label_desc_type}/fp32'
+            BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}/{MODEL_NAME}-seq2seq-{label_desc_type}/fp32'
             if not os.path.exists(BASE_DIR) and label_desc_type == 'simplified':
-                BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}/t5-base-seq2seq/fp32'
+                BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}/{MODEL_NAME}-seq2seq/fp32'
                 if not os.path.exists(BASE_DIR):
                     print(path + ' NOPE')
                     continue
@@ -28,7 +29,7 @@ def main():
                     print(path + ' NOPE')
                     continue
                 os.mkdir(OUTPUT_DIR + f'/{seed}')
-                shutil.copy(path, OUTPUT_DIR + f'/{seed}/' + 'test_predictions.pkl')
+                shutil.copy(path, OUTPUT_DIR + f'/{seed}/{MODEL_NAME}/' + 'test_predictions.pkl')
                 shutil.copy(path.replace('test_predictions.pkl', 'test_labels.pkl'),
                             OUTPUT_DIR + f'/{seed}/' + 'test_labels.pkl')
                 print(path + ' EXISTS')
