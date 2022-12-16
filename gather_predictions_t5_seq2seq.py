@@ -15,10 +15,10 @@ def main():
             if not os.path.exists(BASE_DIR) and label_desc_type == 'simplified':
                 BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}/{MODEL_NAME}-seq2seq/fp32'
                 if not os.path.exists(BASE_DIR):
-                    print(path + ' NOPE')
+                    print(BASE_DIR + ' NOPE')
                     continue
             elif not os.path.exists(BASE_DIR):
-                print(path + ' NOPE')
+                print(BASE_DIR + ' NOPE')
                 continue
             OUTPUT_DIR = f'{DATA_DIR}/predictions/{dataset}/seq2seq-{label_desc_type}'
             os.mkdir(OUTPUT_DIR)
