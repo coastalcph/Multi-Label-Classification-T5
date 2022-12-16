@@ -3,7 +3,7 @@ import shutil
 
 from data import DATA_DIR
 
-MODEL_NAME = 't5-base'
+MODEL_NAME = 't5-small'
 
 def main():
     os.mkdir(f'{DATA_DIR}/predictions')
@@ -29,10 +29,14 @@ def main():
                     print(path + ' NOPE')
                     continue
                 os.mkdir(OUTPUT_DIR + f'/{seed}')
-                shutil.copy(path, OUTPUT_DIR + f'/{seed}/{MODEL_NAME}/' + 'test_predictions.pkl')
-                shutil.copy(path.replace('test_predictions.pkl', 'test_labels.pkl'),
-                            OUTPUT_DIR + f'/{seed}/' + 'test_labels.pkl')
-                print(path + ' EXISTS')
+                try:
+                    shutil.copy(path, OUTPUT_DIR + f'/{seed}/{MODEL_NAME}/' + 'test_predictions.pkl')
+                    shutil.copy(path.replace('test_predictions.pkl', 'test_labels.pkl'),
+                                OUTPUT_DIR + f'/{seed}/' + 'test_labels.pkl')
+                    print(path + ' EXISTS')
+                except:
+                    print(path + ' NOPE')
+
 
 
 if __name__ == '__main__':
