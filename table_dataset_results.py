@@ -19,9 +19,12 @@ def main():
     bracket = '\\small{'
     closing_bracket = '}'
 
-    for mode in [('seq2seq-original', 'SEQ2SEQ-ORIGIN'), ('seq2seq-original-greedy', 'SEQ2SEQ-GREEDY'),
-                 ('seq2seq-simplified', 'SEQ2SEQ-SIMPLE'), ('standard', 'ENC-HEAD'), ('lwan', 'LWAN'),
-                 ('enc2dec', 'ENC-DEC-1'), ('t5enc-multi', 'ENC-DEC-N')]:
+    for mode in [('seq2seq-original', 'Seq2Seq'),
+                 # ('seq2seq-original-greedy', 'SEQ2SEQ-GREEDY'),
+                 # ('seq2seq-simplified', 'SEQ2SEQ-SIMPLE'),
+                 ('standard', 'Encoder+Head'),
+                 ('lwan', 'LWAN'),
+                 ('enc2dec', 'Single-Step T5Enc'), ('t5enc-multi', 'Multi-Step T5Enc')]:
         dataset_line = f'{mode[1]:>10}'
         for dataset in ['uklex', 'eurlex', 'bioasq', 'mimic']:
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
