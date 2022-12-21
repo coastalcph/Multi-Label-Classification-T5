@@ -1,3 +1,4 @@
 UKLEX: https://drive.google.com/file/d/1HNH2yTvrv44_HtNl9XurzOGWV-PWUNDi/view?usp=share_link
+EURLEX: https://drive.google.com/file/d/16Vg0Z64fGky-XfgIdQmaDrhw4gShNECX/view?usp=share_link
+MIMIC:https://drive.google.com/file/d/108FBdDyzaSXmOzLN6E0DbGAhvPZjIEjf/view?usp=share_link
 BIOASQ: https://drive.google.com/file/d/1fNVPenEtpYw-J62oq6SfFdyFN90Mz4PR/view?usp=share_link
-TRAINED UKLEX MODEL: https://drive.google.com/file/d/120bG6xeheEi3kEei4t1r7_RHyy7BaVKJ/view?usp=share_link
