@@ -16,7 +16,6 @@ from datasets import load_dataset
 from sklearn.metrics import f1_score, classification_report
 from scipy.special import expit
 import glob
-import copy
 import shutil
 
 import transformers
@@ -37,7 +36,7 @@ from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from data import AUTH_KEY, DATA_DIR
 from data_collator import DataCollatorForMultiLabelClassification
-from models.t5_classifier import T5ForSequenceClassificatiom
+from models.t5_classifier import T5ForSequenceClassification
 from experiments.trainer_seq2seq import Seq2SeqTrainer
 from data.multilabel_bench.label_descriptors import EUROVOC_CONCEPTS, ICD9_CONCEPTS, MESH_CONCEPTS, UKLEX_CONCEPTS
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -167,6 +166,14 @@ class ModelArguments:
     t5_enc2dec_mode: str = field(
         default="single-step",
         metadata={"help": "Mode for T5Enc (single-step, or multi-step)."},
+    )
+    causal_masking: bool = field(
+        default=True,
+        metadata={"help": "Whether to use causal masking or not for T5 decoder."},
+    )
+    no_attention: bool = field(
+        default=False,
+        metadata={"help": "Whether to not attend other decoder steps on T5 decoder."},
     )
     use_lwan: bool = field(
         default=False,
@@ -378,9 +385,11 @@ def main():
         config.lwan_version = model_args.lwan_version
         config.t5_enc2dec = model_args.t5_enc2dec
         config.t5_enc2dec_mode = model_args.t5_enc2dec_mode
+        config.causal_masking = model_args.causal_masking
+        config.no_attention = model_args.no_attention
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         config.n_dec_layers = model_args.n_dec_layers if model_args.lwan_heads > 0 else config.num_decoder_layers
-        model = T5ForSequenceClassificatiom.from_pretrained(
+        model = T5ForSequenceClassification.from_pretrained(
             model_args.model_name_or_path,
             from_tf=bool(".ckpt" in model_args.model_name_or_path),
             config=config,

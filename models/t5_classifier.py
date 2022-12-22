@@ -30,7 +30,7 @@ from torch import nn
 from transformers.models.t5.configuration_t5 import T5Config
 from transformers.models.t5.modeling_t5 import T5PreTrainedModel, T5Stack
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
-
+from models.custom_t5_decoder import CustomT5Stack
 
 class Pooler(nn.Module):
     def __init__(self, config):
@@ -243,7 +243,7 @@ class LabelWiseAttentionV3(nn.Module):
         return torch.sum(context_layer * self.label_outputs, dim=-1)
 
 
-class T5ForSequenceClassificatiom(T5PreTrainedModel):
+class T5ForSequenceClassification(T5PreTrainedModel):
     _keys_to_ignore_on_load_missing = [
         r"encoder.embed_tokens.weight",
         r"decoder",
@@ -278,7 +278,10 @@ class T5ForSequenceClassificatiom(T5PreTrainedModel):
             decoder_config.is_decoder = True
             decoder_config.is_encoder_decoder = False
             decoder_config.num_layers = config.num_decoder_layers
-            self.decoder = T5Stack(decoder_config, self.shared)
+            if config.causal_masking:
+                self.decoder = T5Stack(decoder_config, self.shared)
+            else:
+                self.decoder = CustomT5Stack(decoder_config, self.shared)
             self.decoder.block = self.decoder.block[:config.n_dec_layers]
             if self.t5_enc2dec_mode == 'single-step':
                 self.classifier = Pooler(config)
@@ -419,7 +422,7 @@ if __name__ == "__main__":
     config.n_dec_layers = 1
     config.lwan_heads = 12
     config.num_labels = 20
-    model = T5ForSequenceClassificatiom.from_pretrained('t5-base', config=config)
+    model = T5ForSequenceClassification.from_pretrained('t5-base', config=config)
     tokenizer = AutoTokenizer.from_pretrained('t5-base')
     inputs = tokenizer(['dog ' * random.randint(400, 512) for _ in range(3)], truncation=True, max_length=512, padding='max_length', return_tensors='pt')
     decode_inputs = tokenizer(['dog ' * 20 for _ in range(3)], truncation=True, max_length=20,
