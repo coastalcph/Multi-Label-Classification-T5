@@ -14,7 +14,7 @@ def main():
     # Required arguments
     parser.add_argument('--model',  default='t5-base')
     parser.add_argument('--level', default='l1')
-    parser.add_argument('--subset', default='predict')
+    parser.add_argument('--subset', default='eval')
     config = parser.parse_args()
     bracket = '\\small{'
     closing_bracket = '}'
@@ -24,8 +24,10 @@ def main():
                  # ('seq2seq-simplified', 'SEQ2SEQ-SIMPLE'),
                  ('standard', 'Encoder+Head'),
                  ('lwan', 'LWAN'),
-                 ('enc2dec', 'Single-Step T5Enc'), ('t5enc-multi', 'Multi-Step T5Enc')]:
-        dataset_line = f'{mode[1]:>10}'
+                 ('enc2dec', 'Single-Step T5Enc'),
+                 ('t5enc-multi', 'Multi-Step T5Enc'),
+                 ('t5enc-multi-full', 'Multi-Step T5Enc (Unmasked)')]:
+        dataset_line = f'{mode[1]:>15}'
         for dataset in ['uklex', 'eurlex', 'bioasq', 'mimic']:
             BASE_DIR = f'{DATA_DIR}/logs/adafactor/{dataset}-{config.level}/{config.model}-{mode[0]}/fp32'
             scores = {'eval_micro-f1': [], 'eval_macro-f1': [], 'predict_micro-f1': [], 'predict_macro-f1': []}
