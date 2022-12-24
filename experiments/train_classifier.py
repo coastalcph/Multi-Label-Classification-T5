@@ -171,8 +171,8 @@ class ModelArguments:
         default=True,
         metadata={"help": "Whether to use causal masking or not for T5 decoder."},
     )
-    no_attention: bool = field(
-        default=False,
+    decoder_attention: bool = field(
+        default=True,
         metadata={"help": "Whether to not attend other decoder steps on T5 decoder."},
     )
     use_lwan: bool = field(
@@ -386,7 +386,7 @@ def main():
         config.t5_enc2dec = model_args.t5_enc2dec
         config.t5_enc2dec_mode = model_args.t5_enc2dec_mode
         config.causal_masking = model_args.causal_masking
-        config.no_attention = model_args.no_attention
+        config.decoder_attention = model_args.decoder_attention
         config.lwan_heads = model_args.lwan_heads if model_args.lwan_heads > 0 else config.num_heads
         config.n_dec_layers = model_args.n_dec_layers if model_args.lwan_heads > 0 else config.num_decoder_layers
         model = T5ForSequenceClassification.from_pretrained(

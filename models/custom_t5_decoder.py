@@ -17,9 +17,14 @@ class CustomT5Stack(T5PreTrainedModel):
         self.embed_tokens = embed_tokens
         self.is_decoder = True
 
-        self.block = nn.ModuleList(
-            [T5Block(config, has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
-        )
+        if config.decoder_attention:
+            self.block = nn.ModuleList(
+                [T5Block(config, has_relative_attention_bias=bool(i == 0)) for i in range(config.num_layers)]
+            )
+        else:
+            self.block = nn.ModuleList(
+                [T5Block(config, has_relative_attention_bias=False) for _ in range(config.num_layers)]
+            )
         self.final_layer_norm = T5LayerNorm(config.d_model, eps=config.layer_norm_epsilon)
         self.dropout = nn.Dropout(config.dropout_rate)
 
@@ -138,7 +143,7 @@ class CustomT5Stack(T5PreTrainedModel):
         if not self.config.causal_masking:
             extended_attention_mask = 0 * extended_attention_mask
 
-        if self.config.no_attention:
+        if not self.config.decoder_attention:
             reverse_eye_attention_mask = (torch.eye(extended_attention_mask.size()[2]) == 0).int() * -1000
             extended_attention_mask = torch.unsqueeze(torch.unsqueeze(reverse_eye_attention_mask, 0).repeat(extended_attention_mask.size()[0], 1, 1), 1)
 
@@ -168,6 +173,8 @@ class CustomT5Stack(T5PreTrainedModel):
         for i, (layer_module, past_key_value) in enumerate(zip(self.block, past_key_values)):
             layer_head_mask = head_mask[i]
             cross_attn_layer_head_mask = cross_attn_head_mask[i]
+            if not self.config.decoder_attention:
+                position_bias = None
             # Model parallel
             if self.model_parallel:
                 torch.cuda.set_device(hidden_states.device)
