@@ -145,7 +145,7 @@ class CustomT5Stack(T5PreTrainedModel):
 
         if not self.config.decoder_attention:
             reverse_eye_attention_mask = (torch.eye(extended_attention_mask.size()[2]) == 0).int() * -1000
-            extended_attention_mask = torch.unsqueeze(torch.unsqueeze(reverse_eye_attention_mask, 0).repeat(extended_attention_mask.size()[0], 1, 1), 1)
+            extended_attention_mask = torch.unsqueeze(torch.unsqueeze(reverse_eye_attention_mask, 0).repeat(extended_attention_mask.size()[0], 1, 1), 1).to(extended_attention_mask.device)
 
         # If a 2D or 3D attention mask is provided for the cross-attention
         # we need to make broadcastable to [batch_size, num_heads, seq_length, seq_length]
