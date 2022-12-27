@@ -254,7 +254,7 @@ class LabelWiseAttentionV4(nn.Module):
         self.label_transformer = nn.TransformerEncoder(self.pre_encoder_layer, num_layers=2)
         self.post_encoder_layer = nn.TransformerEncoderLayer(d_model=config.d_model, nhead=config.num_heads)
         self.label_doc_transformer = nn.TransformerEncoder(self.post_encoder_layer, num_layers=2)
-        self.edge_index = torch.ones((2, self.num_labels), dtype=torch.int64)
+        # self.edge_index = torch.ones((2, self.num_labels), dtype=torch.int64)
         self.key = nn.Linear(self.config.d_model, self.config.d_model)
         self.value = nn.Linear(self.config.d_model, self.config.d_model)
         self.query = nn.Linear(self.config.d_model, self.config.d_model)
