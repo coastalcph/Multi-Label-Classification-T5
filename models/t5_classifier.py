@@ -243,6 +243,50 @@ class LabelWiseAttentionV3(nn.Module):
         return torch.sum(context_layer * self.label_outputs, dim=-1)
 
 
+class LabelWiseAttentionV4(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.num_labels = config.num_labels
+        self.config = config
+        # self.pre_gat = GAT(2, num_heads_per_layer=[config.num_heads] * 2, num_features_per_layer=[config.d_model] * 3,
+        #                    dropout=config.dropout_rate)
+        self.pre_encoder_layer = nn.TransformerEncoderLayer(d_model=config.d_model, nhead=config.num_heads)
+        self.label_transformer = nn.TransformerEncoder(self.pre_encoder_layer, num_layers=2)
+        self.post_encoder_layer = nn.TransformerEncoderLayer(d_model=config.d_model, nhead=config.num_heads)
+        self.label_doc_transformer = nn.TransformerEncoder(self.post_encoder_layer, num_layers=2)
+        self.edge_index = torch.ones((2, self.num_labels), dtype=torch.int64)
+        self.key = nn.Linear(self.config.d_model, self.config.d_model)
+        self.value = nn.Linear(self.config.d_model, self.config.d_model)
+        self.query = nn.Linear(self.config.d_model, self.config.d_model)
+        self.output = nn.Linear(self.config.d_model, self.config.d_model)
+        # self.post_gat = GAT(2, num_heads_per_layer=[config.num_heads] * 2, num_features_per_layer=[config.d_model] * 3,
+        #                     dropout=config.dropout_rate)
+
+    def forward(self,
+                hidden_states: Optional[torch.FloatTensor],
+                label_hidden_states: Optional[torch.FloatTensor],
+                attention_mask: Optional[torch.FloatTensor] = None,
+                ) -> torch.Tensor:
+        # data = (label_hidden_states.squeeze(0), self.edge_index)
+        label_embeddings = self.label_transformer(label_hidden_states).squeeze(0)
+        label_queries = self.query(label_embeddings)
+        label_outputs = self.output(label_embeddings)
+        # Zero out masked hidden states
+        hidden_states = hidden_states * attention_mask.squeeze().unsqueeze(-1)
+
+        # Label-wise Attention
+        keys = self.key(hidden_states)
+        queries = torch.unsqueeze(label_queries, 0).repeat(hidden_states.size(0), 1, 1)
+        values = self.value(hidden_states)
+        attention_scores = torch.einsum("aec,abc->abe", keys, queries)
+        attention_probs = nn.Softmax(dim=-1)(attention_scores)
+        lwan_encodings = torch.einsum("abe,aec->abc", attention_probs, values)
+        post_lwan_encodings = self.label_doc_transformer(lwan_encodings)
+
+        # Compute label scores / outputs
+        return torch.sum(post_lwan_encodings * label_outputs, dim=-1)
+
+
 class T5ForSequenceClassification(T5PreTrainedModel):
     _keys_to_ignore_on_load_missing = [
         r"encoder.embed_tokens.weight",
@@ -257,6 +301,7 @@ class T5ForSequenceClassification(T5PreTrainedModel):
         self.use_lwan = config.use_lwan
         self.t5_enc2dec = config.t5_enc2dec
         self.t5_enc2dec_mode = config.t5_enc2dec_mode
+        self.use_lwan_advanced = config.use_lwan_advanced
         self.model_dim = config.d_model
         self.num_labels = config.num_labels
         self.shared = nn.Embedding(config.vocab_size, config.d_model)
@@ -273,6 +318,8 @@ class T5ForSequenceClassification(T5PreTrainedModel):
             self.classifier = LabelWiseAttentionV2(config)
         elif self.use_lwan and config.lwan_version == 3:
             self.classifier = LabelWiseAttentionV3(config)
+        elif self.use_lwan_advanced:
+            self.classifier = LabelWiseAttentionV4(config)
         elif self.t5_enc2dec:
             decoder_config = copy.deepcopy(config)
             decoder_config.is_decoder = True
@@ -366,6 +413,9 @@ class T5ForSequenceClassification(T5PreTrainedModel):
 
         sequence_output = encoder_outputs[0]
 
+        if self.use_lwan_advanced:
+            label_outputs = self.encoder.embed_tokens(decoder_input_ids[0].unsqueeze(0))
+
         if self.t5_enc2dec:
             decoder_outputs = self.decoder(
                 input_ids=decoder_input_ids,
@@ -374,6 +424,10 @@ class T5ForSequenceClassification(T5PreTrainedModel):
                 encoder_attention_mask=attention_mask,
             )
             logits = self.classifier(decoder_outputs[0], attention_mask=attention_mask)
+        elif self.use_lwan_advanced:
+            logits = self.classifier(sequence_output,
+                                     label_hidden_states=label_outputs,
+                                     attention_mask=extended_mask)
         else:
             logits = self.classifier(sequence_output, attention_mask=extended_mask)
 

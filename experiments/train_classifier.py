@@ -187,6 +187,10 @@ class ModelArguments:
         default=1,
         metadata={"help": "Number of Label-Wise Attention Heads."},
     )
+    use_lwan_advanced: bool = field(
+        default=False,
+        metadata={"help": "Whether the model is a Label-Wise Attention Network (LWAN) with GAT."},
+    )
     n_beams: int = field(
         default=4,
         metadata={"help": "Number of beams for seq2seq."},
@@ -326,7 +330,7 @@ def main():
         raise Exception(f'Dataset {data_args.dataset_name} is not supported!')
 
     # Label descriptors mode
-    if model_args.seq2seq or model_args.t5_enc2dec:
+    if model_args.seq2seq or model_args.t5_enc2dec or model_args.use_lwan_advanced:
         # Use original descriptors, e.g., EUROVOC 100153 ->  `employment and working conditions`
         if data_args.label_descriptors_mode == 'original':
             label_desc2id = {label_desc[0].replace(',', '').lower(): idx for idx, label_desc in enumerate(label_descs)}
@@ -383,6 +387,7 @@ def main():
         # Register pooling method to config
         config.use_lwan = model_args.use_lwan
         config.lwan_version = model_args.lwan_version
+        config.use_lwan_advanced = model_args.use_lwan_advanced
         config.t5_enc2dec = model_args.t5_enc2dec
         config.t5_enc2dec_mode = model_args.t5_enc2dec_mode
         config.causal_masking = model_args.causal_masking
@@ -449,7 +454,7 @@ def main():
                 )
                 batch['decoder_input_ids'] = decoder_inputs['input_ids']
                 batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
-            elif model_args.t5_enc2dec_mode == 'multi-step':
+            elif model_args.t5_enc2dec_mode == 'multi-step' or model_args.use_lwan_advanced:
                 decoder_inputs = tokenizer(
                     [' '.join([label_id2desc[label] for label in label_id2desc]) for _ in examples['text']],
                     padding=False,
