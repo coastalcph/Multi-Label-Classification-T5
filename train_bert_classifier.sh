@@ -51,5 +51,3 @@ do
   --eval_accumulation_steps 1 \
   --learning_rate ${LEARNING_RATE}
 done
-
-python report_dataset_results.py --model ${MODEL_NAME} --optimizer ${OPTIMIZER} --fp fp32 --dataset ${DATASET}
