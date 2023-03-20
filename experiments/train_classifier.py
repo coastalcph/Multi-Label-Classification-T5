@@ -24,6 +24,7 @@ from transformers import (
     AutoConfig,
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
+    AutoModelForSequenceClassification,
     EvalPrediction,
     HfArgumentParser,
     TrainingArguments,
@@ -383,6 +384,14 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
         )
+    elif config.model_type not in ['bert', 'roberta']:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_args.model_name_or_path,
+            from_tf=bool(".ckpt" in model_args.model_name_or_path),
+            config=config,
+            cache_dir=model_args.cache_dir,
+            revision=model_args.model_revision,
+        )
     else:
         # Register pooling method to config
         config.use_lwan = model_args.use_lwan
@@ -431,7 +440,9 @@ def main():
             padding=padding,
             max_length=data_args.max_seq_length,
             truncation=True,
-            add_special_tokens=True if (model_args.seq2seq or model_args.use_lwan or model_args.t5_enc2dec) else False
+            add_special_tokens=True if (model_args.seq2seq or model_args.use_lwan
+                                        or model_args.t5_enc2dec or
+                                        config.model_type not in ['bert', 'roberta']) else False
         )
 
         if model_args.seq2seq:
@@ -465,7 +476,7 @@ def main():
                 batch['decoder_input_ids'] = decoder_inputs['input_ids']
                 batch['decoder_attention_mask'] = decoder_inputs['attention_mask']
 
-            if not model_args.use_lwan and not model_args.t5_enc2dec:
+            if not model_args.use_lwan and not model_args.t5_enc2dec and config.model_type not in ['bert', 'roberta']:
                 for idx, _ in enumerate(batch['input_ids']):
                     batch['input_ids'][idx][-1] = tokenizer.eos_token_id
                     batch['attention_mask'][idx][-1] = 1
