@@ -596,3 +596,18 @@ UKLEX_CONCEPTS = {'level_1': {'AGRICULTURE & FOOD': ('Agriculture & Food', 'agri
                               'WASTE': ('Waste', 'waste'),
                               'WATER': ('Water', 'water'),
                               'WATER TRANSPORT': ('Water Transport', 'boat')}}
+
+
+ECTHR_ARTICLES = {
+    "level_1": {"2": ("Right to life", 'life'),
+                "3": ("Prohibition of torture", 'torture'),
+                "5": ("Right to liberty and security", 'liberty'),
+                "6": ("Right to a fair trial", 'fair'),
+                "8": ("Right to respect for private and family life", 'private'),
+                "9": ("Freedom of thought, conscience and religion ", 'thought'),
+                "10": ("Freedom of expression", 'expression'),
+                "11": ("Freedom of assembly and association", 'assembly'),
+                "14": ("Prohibition of discrimination", 'discrimination'),
+                "P1-1": ("Protection of property", 'property'),
+                "None": ("None", 'no')}
+}

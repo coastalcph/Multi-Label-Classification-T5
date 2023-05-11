@@ -23,7 +23,6 @@ MAIN_CITATION = "TBA"
 
 _DESCRIPTION = """MultiLabelBench: A Benchmark Dataset for Multi-Label Text Classification. Version 1.0"""
 
-
 MESH_CONCEPTS = {
     "level_1": ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Z'],
     "level_2": ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'A13', 'A14', 'A15',
@@ -94,6 +93,10 @@ UKLEX_CONCEPTS = {
                 'POLICE', 'POLITICAL PARTIES', 'POLLUTION', 'PUBLIC ORDER', 'SOCIAL SECURITY', 'TAXATION',
                 'TELECOMMUNICATIONS', 'TERRORISM', 'TRANSPORT AND WORKS', 'URBAN DEVELOPMENT', 'WASTE', 'WATER',
                 'WATER TRANSPORT']
+}
+
+ECTHR_ARTICLES = {
+    "level_1": ["2", "3", "5", "6", "8", "9", "10", "11", "14", "P1-1", "None"]
 }
 
 MAIN_PATH = 'data_files'
@@ -252,6 +255,19 @@ class MultiLabelBench(datasets.GeneratorBasedBuilder):
             url='TBA',
             data_url=f"bioasq.tar.gz",
             data_file="bioasq.jsonl",
+            citation='TBA',
+        ),
+        MultiLabelBenchConfig(
+            name="ecthr-l1",
+            description="ECtHR cases",
+            text_column="facts",
+            label_column="violated_articles",
+            label_level='level_2',
+            label_classes=ECTHR_ARTICLES['level_1'],
+            dev_column="dev",
+            url='TBA',
+            data_url=f"ecthr.tar.gz",
+            data_file="ecthr.jsonl",
             citation='TBA',
         ),
 

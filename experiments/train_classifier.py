@@ -39,7 +39,7 @@ from data import AUTH_KEY, DATA_DIR
 from data_collator import DataCollatorForMultiLabelClassification
 from models.t5_classifier import T5ForSequenceClassification
 from experiments.trainer_seq2seq import Seq2SeqTrainer
-from data.multilabel_bench.label_descriptors import EUROVOC_CONCEPTS, ICD9_CONCEPTS, MESH_CONCEPTS, UKLEX_CONCEPTS
+from data.multilabel_bench.label_descriptors import EUROVOC_CONCEPTS, ICD9_CONCEPTS, MESH_CONCEPTS, UKLEX_CONCEPTS, ECTHR_ARTICLES
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.20.0")
 
@@ -326,6 +326,9 @@ def main():
         label_descs = [label_descriptors[label_code] for label_code in labels_codes]
     elif 'uklex' in data_args.dataset_name:
         label_descriptors = UKLEX_CONCEPTS[f'level_{data_args.dataset_name.split("-")[-1][-1]}']
+        label_descs = [label_descriptors[label_code] for label_code in labels_codes]
+    elif 'ecthr' in data_args.dataset_name:
+        label_descriptors = ECTHR_ARTICLES[f'level_{data_args.dataset_name.split("-")[-1][-1]}']
         label_descs = [label_descriptors[label_code] for label_code in labels_codes]
     else:
         raise Exception(f'Dataset {data_args.dataset_name} is not supported!')
