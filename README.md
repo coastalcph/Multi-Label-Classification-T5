@@ -10,7 +10,7 @@ we compare four methods for multi-label classification, two based on an encoder 
 
 ### Citation
 
-[*Yova Kementchedjhieva and Ilias Chalkidis. 2023. An Exploration of Encoder-Decoder Approaches to Multi-Label Classification for Legal and Biomedical Text. In Findings of the Association for Computational Linguistics: ACL 2023, pages 5828–5843, Toronto, Canada. Association for Computational Linguistics.*](https://aclanthology.org/2023.acl-long.865/)
+[*Yova Kementchedjhieva and Ilias Chalkidis. 2023. An Exploration of Encoder-Decoder Approaches to Multi-Label Classification for Legal and Biomedical Text. In Findings of the Association for Computational Linguistics: ACL 2023, pages 5828–5843, Toronto, Canada. Association for Computational Linguistics.*](https://aclanthology.org/2023.findings-acl.360/)
 ```
 @inproceedings{kementchedjhieva-chalkidis-2023-exploration,
     title = "An Exploration of Encoder-Decoder Approaches to Multi-Label Classification for Legal and Biomedical Text",
